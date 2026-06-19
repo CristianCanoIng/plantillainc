@@ -586,7 +586,7 @@
         <div class="icon icon-status" aria-hidden="true"></div>
         <div class="field-line">
           <span class="label">Estado:</span>
-          <select data-field="status" aria-label="Estado del incidente" onchange="scheduleAutoSave()">
+          <select data-field="status" aria-label="Estado del incidente" onchange="document.querySelector('[data-field=statusLabel]').textContent = this.value; scheduleAutoSave()">
             <option>En Diagnostico</option>
             <option>Identificado</option>
             <option>En Mitigacion</option>
