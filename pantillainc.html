@@ -454,8 +454,12 @@
 
     @media (max-width: 620px) {
       .incident-card { padding: 18px 15px; }
-      .header { grid-template-columns: 32px 1fr; }
-      .logo-slot { grid-column: 1 / -1; justify-content: flex-start; padding-left: 0; margin-top: 6px; }
+      .header { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+      .siren { flex-shrink: 0; }
+      .title-block { flex: 1; min-width: 150px; }
+      .logo-slot { min-height: 36px; flex-shrink: 0; }
+      .logo-slot img { max-width: 100px; max-height: 36px; }
+      .logo-placeholder { width: 90px; min-height: 28px; font-size: 9px; padding: 4px; }
       .title { font-size: 14px; }
       .meta-grid { grid-template-columns: 1fr; }
       .row { grid-template-columns: 24px 1fr; gap: 8px; }
