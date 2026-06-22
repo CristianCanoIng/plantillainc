@@ -1317,6 +1317,10 @@
     }
 
     function writeCurrentIncident(data) {
+      if (!card) {
+        console.error(".incident-card no encontrada (card=null)");
+        return;
+      }
       card.querySelectorAll("[data-field]").forEach((node) => {
         const key = node.dataset.field;
         if (key === "incidentType") return;
