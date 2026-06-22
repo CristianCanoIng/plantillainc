@@ -928,6 +928,21 @@
     let realtimeSyncListener = null;
     let currentUser = true; // base publica, sin login requerido
 
+    // Almacenamiento en memoria como respaldo robusto
+    let _memoryStorage = [];
+
+    function _localStorageAvailable() {
+      try {
+        const test = "__test__";
+        localStorage.setItem(test, test);
+        localStorage.removeItem(test);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+    const _hasLocalStorage = _localStorageAvailable();
+
     // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyDpt9BxJUG-1pkikgc20hAN6tNJsY8y79o",
@@ -949,8 +964,16 @@
       useFirebase = true;
       setupRealtimeSync();
     } catch (error) {
-      console.warn("Firebase no configurado. Usando almacenamiento local.", error);
+      console.warn("Firebase no configurado. Usando almacenamiento local/memoria.", error);
       useFirebase = false;
+    }
+
+    // Si no hay Firebase, sincronizar memoria con localStorage al cargar
+    if (!useFirebase && _hasLocalStorage) {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        if (Array.isArray(saved)) _memoryStorage = saved;
+      } catch(e) {}
     }
 
     const defaultIncident = {
@@ -1022,18 +1045,24 @@
 
     function getIncidents() {
       if (!useFirebase) {
-        try {
-          return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-        } catch (error) {
-          return [];
+        if (_hasLocalStorage) {
+          try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+          } catch (error) {
+            return _memoryStorage;
+          }
         }
+        return _memoryStorage;
       }
       return window._firebaseIncidents || [];
     }
 
     function setIncidents(incidents) {
       if (!useFirebase) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(incidents));
+        _memoryStorage = incidents;
+        if (_hasLocalStorage) {
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(incidents)); } catch(e) {}
+        }
         return;
       }
       db.ref(`incidents/public`).set(
