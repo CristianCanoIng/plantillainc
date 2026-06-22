@@ -331,6 +331,165 @@
 
     .step-sep { width: 26px; height: 1px; background: var(--pill-border); }
 
+    /* ===== Type Selector ===== */
+    .type-selector {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .type-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .type-option input[type="radio"] {
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
+      accent-color: var(--orange);
+    }
+
+    /* ===== Type Sections ===== */
+    .type-section {
+      animation: slideDown 0.2s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        max-height: 0;
+      }
+      to {
+        opacity: 1;
+        max-height: 1000px;
+      }
+    }
+
+    /* ===== Timeline ===== */
+    .timeline {
+      position: relative;
+      padding: 16px 0 16px 40px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--line);
+    }
+
+    .timeline-entry {
+      position: relative;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: var(--pill);
+      border: 1px solid var(--pill-border);
+      border-radius: 8px;
+    }
+
+    .timeline-entry::before {
+      content: "";
+      position: absolute;
+      left: -38px;
+      top: 20px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--orange);
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 2px var(--orange);
+    }
+
+    .timeline-time {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--orange-dark);
+      margin-bottom: 4px;
+    }
+
+    .timeline-content {
+      font-size: 12px;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .timeline-remove {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: transparent;
+      border: 0;
+      color: #d23a55;
+      cursor: pointer;
+      font-weight: 900;
+      padding: 0;
+      font-size: 16px;
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+    }
+
+    .timeline-remove:hover {
+      background: rgba(210, 58, 85, 0.1);
+      border-radius: 4px;
+    }
+
+    /* ===== Paso/Compromiso Item ===== */
+    .paso-item, .compromiso-item {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      padding: 10px;
+      background: var(--pill);
+      border: 1px solid var(--pill-border);
+      border-radius: 6px;
+      align-items: flex-start;
+    }
+
+    .paso-content, .compromiso-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .paso-text, .compromiso-text {
+      font: inherit;
+      border: 0;
+      background: transparent;
+      width: 100%;
+      padding: 4px;
+      color: #555;
+      font-size: 12px;
+      resize: vertical;
+      min-height: 35px;
+    }
+
+    .paso-remove, .compromiso-remove {
+      background: transparent;
+      border: 0;
+      color: #d23a55;
+      cursor: pointer;
+      font-weight: 900;
+      padding: 0;
+      font-size: 18px;
+      flex: 0 0 auto;
+    }
+
+    .paso-remove:hover, .compromiso-remove:hover {
+      color: #b42343;
+    }
+
+    .step-sep { width: 26px; height: 1px; background: var(--pill-border); }
+
     /* ===== Rows ===== */
     .row {
       display: grid;
@@ -473,6 +632,11 @@
       .incident-actions { justify-content: flex-start; }
       .stepper { gap: 4px; }
       .step-sep { width: 14px; }
+      .type-selector { gap: 8px; }
+      .type-option { font-size: 12px; }
+      .timeline { padding: 16px 0 16px 28px; }
+      .timeline::before { left: 4px; }
+      .timeline-entry::before { left: -30px; }
     }
 
     @media print {
@@ -539,137 +703,214 @@
       </div>
 
       <div class="stepper-wrap">
-        <div class="stepper-title">Progreso del incidente</div>
-        <div class="stepper" data-field="phase" id="stepper">
-          <div class="step" data-step="1" onclick="setPhase(1)">
-            <span class="step-num">1</span><span class="step-label">Diagn&oacute;stico</span>
-          </div>
-          <div class="step-sep"></div>
-          <div class="step" data-step="2" onclick="setPhase(2)">
-            <span class="step-num">2</span><span class="step-label">Proveedor</span>
-          </div>
-          <div class="step-sep"></div>
-          <div class="step" data-step="3" onclick="setPhase(3)">
-            <span class="step-num">3</span><span class="step-label">Validaci&oacute;n</span>
-          </div>
-          <div class="step-sep"></div>
-          <div class="step" data-step="4" onclick="setPhase(4)">
-            <span class="step-num">4</span><span class="step-label">Cierre</span>
-          </div>
+        <div class="stepper-title">Tipo de Actualizaci&oacute;n</div>
+        <div class="type-selector" id="typeSelector">
+          <label class="type-option">
+            <input type="radio" name="incidentType" value="apertura" onchange="setIncidentType('apertura')"> Apertura
+          </label>
+          <label class="type-option">
+            <input type="radio" name="incidentType" value="avance" onchange="setIncidentType('avance')"> Avance
+          </label>
+          <label class="type-option">
+            <input type="radio" name="incidentType" value="cierre" onchange="setIncidentType('cierre')"> Cierre
+          </label>
         </div>
       </div>
 
-      <div class="row">
-        <div class="icon icon-clock" aria-hidden="true"></div>
-        <div class="field-line">
-          <span class="label">&Uacute;ltima actualizaci&oacute;n:</span>
-          <span class="pill" data-field="reportTime" contenteditable="true">18/06/2026 - 14:35</span>
-          <span class="pipe">|</span>
-          <span class="pill" data-field="updateNumber" contenteditable="true">Update #3</span>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="icon icon-people" aria-hidden="true"></div>
-        <div>
+      <div id="sectionApertura" class="type-section" style="display: none;">
+        <div class="row">
+          <div class="icon icon-clock" aria-hidden="true"></div>
           <div class="field-line">
-            <span class="label">Comunidad encargada / impactada:</span>
-          </div>
-          <div class="community-list" id="communityList">
-            <span class="community"><span class="mini-icon" aria-hidden="true"></span><span data-community contenteditable="true">UFA</span><button class="remove" type="button" onclick="removeCommunity(this)">&times;</button></span>
-            <span class="community"><span class="mini-icon" aria-hidden="true"></span><span data-community contenteditable="true">Cliente</span><button class="remove" type="button" onclick="removeCommunity(this)">&times;</button></span>
-            <span class="community"><span class="mini-icon" aria-hidden="true"></span><span data-community contenteditable="true">Salud</span><button class="remove" type="button" onclick="removeCommunity(this)">&times;</button></span>
-            <span class="community"><span class="mini-icon" aria-hidden="true"></span><span data-community contenteditable="true">Bienestar</span><button class="remove" type="button" onclick="removeCommunity(this)">&times;</button></span>
-            <button class="add-community" type="button" onclick="addCommunity()">+ Comunidad</button>
+            <span class="label">Fecha del Evento:</span>
+            <input type="datetime-local" data-field="apertura_fechaEvento" style="border: 1px solid var(--pill-border); border-radius: 6px; padding: 4px 8px; font: inherit;">
           </div>
         </div>
-      </div>
 
-      <div class="row">
-        <div class="icon icon-status" aria-hidden="true"></div>
-        <div class="field-line">
-          <span class="label">Estado:</span>
-          <select data-field="status" aria-label="Estado del incidente" onchange="document.querySelector('[data-field=statusLabel]').textContent = this.value; scheduleAutoSave()">
-            <option>En Diagnostico</option>
-            <option>Identificado</option>
-            <option>En Mitigacion</option>
-            <option>Con Proveedor</option>
-            <option>En Validacion</option>
-            <option>Monitoreo</option>
-            <option>Resuelto</option>
-          </select>
-          <span class="status-badge"><span class="dot"></span><span data-field="statusLabel" contenteditable="true">En Diagnostico</span></span>
+        <div class="row">
+          <div class="icon icon-alert" aria-hidden="true"></div>
+          <div>
+            <div class="field-line"><span class="label">Impacto Preliminar:</span></div>
+            <div class="textbox" data-field="apertura_impactoPreliminar" contenteditable="true" data-placeholder="Describe el impacto preliminar identificado."></div>
+          </div>
         </div>
-      </div>
 
-      <div class="row">
-        <div class="icon icon-alert" aria-hidden="true"></div>
-        <div>
-          <div class="field-line"><span class="label">Impacto del Negocio/Servicio:</span></div>
-          <div class="textbox" data-field="impact" contenteditable="true" data-placeholder="Describe el impacto en la operacion, servicio, canales, procesos o usuarios afectados."></div>
+        <div class="row">
+          <div class="icon icon-clock" aria-hidden="true"></div>
+          <div class="field-line">
+            <span class="label">Hora de Inicio Estimada:</span>
+            <input type="time" data-field="apertura_horaInicio" style="border: 1px solid var(--pill-border); border-radius: 6px; padding: 4px 8px; font: inherit;">
+          </div>
         </div>
-      </div>
 
-      <div class="row">
-        <div class="icon icon-service" aria-hidden="true"></div>
-        <div class="field-line">
-          <span class="label">Servicio afectado:</span>
-          <span class="editable-chip" data-field="service" contenteditable="true">[Nombre del servicio/aplicaci&oacute;n]</span>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="icon icon-puzzle" aria-hidden="true"></div>
-        <div>
-          <div class="field-line"><span class="label">Causa Ra&iacute;z nivel: Descripci&oacute;n</span></div>
-          <div class="textbox" data-field="rootCause" contenteditable="true" data-placeholder="Describe la causa raiz identificada o el nivel de analisis actual. Ejemplo: validacion tecnica en curso, proveedor, configuracion, integracion, infraestructura, datos, etc."></div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="icon icon-pin" aria-hidden="true"></div>
-        <div>
-          <div class="field-line"><span class="label">Avance clave:</span></div>
-          <div class="bullet-box">
-            <span class="editable-chip" data-field="progress" contenteditable="true">[1 l&iacute;nea con el &uacute;ltimo hallazgo o acci&oacute;n]</span>
+        <div class="row">
+          <div class="icon icon-service" aria-hidden="true"></div>
+          <div class="field-line">
+            <span class="label">Servicio Afectado:</span>
+            <span class="editable-chip" data-field="apertura_servicio" contenteditable="true">[Nombre del servicio]</span>
           </div>
         </div>
       </div>
 
-      <div class="row">
-        <div class="icon icon-leader" aria-hidden="true"></div>
-        <div style="width:100%">
-          <div class="assoc-box">
-            <div class="assoc-head">
-              <span class="assoc-title">Usuarios / Incidentes asociados</span>
-              <select data-field="scope" aria-label="Alcance" onchange="scheduleAutoSave()">
-                <option>Total</option>
-                <option>Parcial</option>
-              </select>
-            </div>
-            <div class="assoc-main" data-field="affectedUsers" contenteditable="true">Todos los usuarios que intenten ingresar al portal, pagar servicios o realizar compras.</div>
-            <div class="assoc-note" data-field="affectedNote" contenteditable="true">Describe aqu&iacute; qui&eacute;nes se ven afectados, qu&eacute; incidentes est&aacute;n relacionados y si el alcance es total o parcial.</div>
+      <div id="sectionAvance" class="type-section" style="display: none;">
+        <div class="row">
+          <div class="icon icon-service" aria-hidden="true"></div>
+          <div class="field-line">
+            <span class="label">Servicio Afectado:</span>
+            <span class="editable-chip" data-field="avance_servicio" contenteditable="true">[Nombre del servicio]</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="icon icon-pin" aria-hidden="true"></div>
+          <div>
+            <div class="field-line"><span class="label">Avance:</span></div>
+            <div class="textbox" data-field="avance_descripcion" contenteditable="true" data-placeholder="Describe el avance actualizado en la resoluci&oacute;n del incidente."></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="icon icon-puzzle" aria-hidden="true"></div>
+          <div>
+            <div class="field-line"><span class="label">Causa Probable:</span></div>
+            <div class="textbox" data-field="avance_causaProbable" contenteditable="true" data-placeholder="Describe la causa probable identificada hasta el momento."></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="icon icon-next" aria-hidden="true"></div>
+          <div>
+            <div class="field-line"><span class="label">Pr&oacute;ximos Pasos:</span></div>
+            <div id="proximosPasosContainer" style="margin-top: 8px;"></div>
+            <button type="button" class="add-community" onclick="addProximoPaso()" style="margin-top: 8px;">+ Agregar Paso</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="icon icon-leader" aria-hidden="true"></div>
+          <div class="field-line">
+            <span class="label">L&iacute;der del Incidente:</span>
+            <span class="editable-chip" data-field="avance_lider" contenteditable="true">[Nombre]</span>
+          </div>
+        </div>
+
+        <div class="row" style="padding-top: 20px; padding-bottom: 0;">
+          <div style="width: 100%;">
+            <div class="field-line"><span class="label" style="font-weight: 900; font-size: 13px; color: var(--ink);">L&iacute;nea de Tiempo de Avances:</span></div>
+            <div id="timelineContainer" style="margin-top: 16px;"></div>
+            <button type="button" class="add-community" onclick="addTimelineEntry()" style="margin-top: 16px;">+ Nuevo Avance en L&iacute;nea de Tiempo</button>
           </div>
         </div>
       </div>
 
-      <div class="row">
-        <div class="icon icon-next" aria-hidden="true"></div>
-        <div>
-          <div class="field-line"><span class="label">Pr&oacute;ximo paso:</span></div>
-          <div class="bullet-box">
-            <span class="editable-chip" data-field="nextStep" contenteditable="true">[Acci&oacute;n + responsable] &ndash; ETA: [hh:mm]</span>
+      <div id="sectionCierre" class="type-section" style="display: none;">
+        <div class="row">
+          <div class="icon icon-clock" aria-hidden="true"></div>
+          <div class="field-line">
+            <span class="label">Hora Inicio de Afectaci&oacute;n:</span>
+            <input type="datetime-local" data-field="cierre_horaInicio" style="border: 1px solid var(--pill-border); border-radius: 6px; padding: 4px 8px; font: inherit;">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="icon icon-clock" aria-hidden="true"></div>
+          <div class="field-line">
+            <span class="label">Hora Final de Afectaci&oacute;n:</span>
+            <input type="datetime-local" data-field="cierre_horaFinal" style="border: 1px solid var(--pill-border); border-radius: 6px; padding: 4px 8px; font: inherit;">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="icon icon-people" aria-hidden="true"></div>
+          <div class="field-line">
+            <span class="label">Área TI Responsable:</span>
+            <span class="editable-chip" data-field="cierre_areaResponsable" contenteditable="true">[Área TI]</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="icon icon-puzzle" aria-hidden="true"></div>
+          <div>
+            <div class="field-line"><span class="label">Causa Ra&iacute;z:</span></div>
+            <div class="textbox" data-field="cierre_causaRaiz" contenteditable="true" data-placeholder="Describe la causa ra&iacute;z identificada del incidente."></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="icon icon-status" aria-hidden="true"></div>
+          <div class="field-line">
+            <span class="label">Tipo de Soluci&oacute;n:</span>
+            <span class="editable-chip" data-field="cierre_tipoSolucion" contenteditable="true">[Tipo de Soluci&oacute;n]</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="icon icon-puzzle" aria-hidden="true"></div>
+          <div>
+            <div class="field-line"><span class="label">Soluci&oacute;n Aplicada:</span></div>
+            <div class="textbox" data-field="cierre_solucionAplicada" contenteditable="true" data-placeholder="Describe la soluci&oacute;n que se aplic&oacute; para resolver el incidente."></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="icon icon-pin" aria-hidden="true"></div>
+          <div>
+            <div class="field-line"><span class="label">Compromisos sobre Acta:</span></div>
+            <div id="compromisosContainer" style="margin-top: 8px;"></div>
+            <button type="button" class="add-community" onclick="addCompromiso()" style="margin-top: 8px;">+ Agregar Compromiso</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="icon icon-clock" aria-hidden="true"></div>
+          <div class="field-line">
+            <span class="label">Hora Final de Afectaci&oacute;n:</span>
+            <input type="datetime-local" data-field="cierre_horaFinal" style="border: 1px solid var(--pill-border); border-radius: 6px; padding: 4px 8px; font: inherit;">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="icon icon-people" aria-hidden="true"></div>
+          <div class="field-line">
+            <span class="label">Área TI Responsable:</span>
+            <span class="editable-chip" data-field="cierre_areaResponsable" contenteditable="true">[Área TI]</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="icon icon-puzzle" aria-hidden="true"></div>
+          <div>
+            <div class="field-line"><span class="label">Causa Ra&iacute;z:</span></div>
+            <div class="textbox" data-field="cierre_causaRaiz" contenteditable="true" data-placeholder="Describe la causa ra&iacute;z identificada del incidente."></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="icon icon-status" aria-hidden="true"></div>
+          <div class="field-line">
+            <span class="label">Tipo de Soluci&oacute;n:</span>
+            <span class="editable-chip" data-field="cierre_tipoSolucion" contenteditable="true">[Tipo de Soluci&oacute;n]</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="icon icon-puzzle" aria-hidden="true"></div>
+          <div>
+            <div class="field-line"><span class="label">Soluci&oacute;n Aplicada:</span></div>
+            <div class="textbox" data-field="cierre_solucionAplicada" contenteditable="true" data-placeholder="Describe la soluci&oacute;n que se aplic&oacute; para resolver el incidente."></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="icon icon-pin" aria-hidden="true"></div>
+          <div>
+            <div class="field-line"><span class="label">Compromisos sobre Acta:</span></div>
+            <div id="compromisosContainer" style="margin-top: 8px;"></div>
+            <button type="button" class="add-community" onclick="addCompromiso()" style="margin-top: 8px;">+ Agregar Compromiso</button>
           </div>
         </div>
       </div>
 
-      <div class="row">
-        <div class="icon icon-leader" aria-hidden="true"></div>
-        <div class="field-line">
-          <span class="label">L&iacute;der del incidente:</span>
-          <span class="editable-chip" data-field="leader" contenteditable="true">[Nombre]</span>
-        </div>
-      </div>
+
     </section>
   </main>
 
@@ -719,7 +960,7 @@
       community: "UFA +3",
       sinceDate: "",
       sinceTime: "",
-      phase: 1,
+      incidentType: "apertura",
       reportTime: "",
       updateNumber: "Update #1",
       communities: ["UFA", "Cliente", "Salud", "Bienestar"],
@@ -734,6 +975,26 @@
       affectedNote: "Describe aqu&iacute; qui&eacute;nes se ven afectados, qu&eacute; incidentes est&aacute;n relacionados y si el alcance es total o parcial.",
       nextStep: "[Acci&oacute;n + responsable] &ndash; ETA: [hh:mm]",
       leader: "[Nombre]",
+      // Apertura fields
+      apertura_fechaEvento: "",
+      apertura_impactoPreliminar: "",
+      apertura_horaInicio: "",
+      apertura_servicio: "[Nombre del servicio]",
+      // Avance fields
+      avance_servicio: "[Nombre del servicio]",
+      avance_descripcion: "",
+      avance_causaProbable: "",
+      avance_proximosPasos: [],
+      avance_lider: "[Nombre]",
+      avance_timeline: [],
+      // Cierre fields
+      cierre_horaInicio: "",
+      cierre_horaFinal: "",
+      cierre_areaResponsable: "[Área TI]",
+      cierre_causaRaiz: "",
+      cierre_tipoSolucion: "[Tipo de Solución]",
+      cierre_solucionAplicada: "",
+      cierre_compromisos: [],
       updatedAt: new Date().toISOString()
     };
 
@@ -873,8 +1134,18 @@
         });
     }
 
+    function setIncidentType(type) {
+      const sections = ["sectionApertura", "sectionAvance", "sectionCierre"];
+      sections.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = el.id === `section${type.charAt(0).toUpperCase() + type.slice(1)}` ? "block" : "none";
+      });
+      scheduleAutoSave();
+    }
+
     function setPhase(n) {
       const stepper = document.getElementById("stepper");
+      if (!stepper) return;
       stepper.dataset.phase = n;
       updateStepperUI();
       scheduleAutoSave();
@@ -882,6 +1153,7 @@
 
     function updateStepperUI() {
       const stepper = document.getElementById("stepper");
+      if (!stepper) return;
       const phase = parseInt(stepper.dataset.phase || "1", 10);
       stepper.querySelectorAll(".step").forEach((stepEl) => {
         const n = parseInt(stepEl.dataset.step, 10);
@@ -891,22 +1163,155 @@
       });
     }
 
+    function renderProximosPasos(pasos) {
+      const container = document.getElementById("proximosPasosContainer");
+      if (!container) return;
+      container.innerHTML = "";
+      (pasos || []).forEach((paso) => {
+        const item = document.createElement("div");
+        item.className = "paso-item";
+        item.innerHTML = `
+          <div class="paso-content">
+            <textarea class="paso-text" placeholder="Describe el próximo paso..."></textarea>
+          </div>
+          <button class="paso-remove" type="button" onclick="this.closest('.paso-item').remove(); scheduleAutoSave();">×</button>
+        `;
+        item.querySelector(".paso-text").value = paso;
+        container.appendChild(item);
+      });
+    }
+
+    function addProximoPaso() {
+      const container = document.getElementById("proximosPasosContainer");
+      if (!container) return;
+      const item = document.createElement("div");
+      item.className = "paso-item";
+      item.innerHTML = `
+        <div class="paso-content">
+          <textarea class="paso-text" placeholder="Describe el próximo paso..." autofocus></textarea>
+        </div>
+        <button class="paso-remove" type="button" onclick="this.closest('.paso-item').remove(); scheduleAutoSave();">×</button>
+      `;
+      container.appendChild(item);
+      item.querySelector(".paso-text").focus();
+      scheduleAutoSave();
+    }
+
+    function renderCompromisos(compromisos) {
+      const container = document.getElementById("compromisosContainer");
+      if (!container) return;
+      container.innerHTML = "";
+      (compromisos || []).forEach((compromiso) => {
+        const item = document.createElement("div");
+        item.className = "compromiso-item";
+        item.innerHTML = `
+          <div class="compromiso-content">
+            <textarea class="compromiso-text" placeholder="Describe el compromiso..."></textarea>
+          </div>
+          <button class="compromiso-remove" type="button" onclick="this.closest('.compromiso-item').remove(); scheduleAutoSave();">×</button>
+        `;
+        item.querySelector(".compromiso-text").value = compromiso;
+        container.appendChild(item);
+      });
+    }
+
+    function addCompromiso() {
+      const container = document.getElementById("compromisosContainer");
+      if (!container) return;
+      const item = document.createElement("div");
+      item.className = "compromiso-item";
+      item.innerHTML = `
+        <div class="compromiso-content">
+          <textarea class="compromiso-text" placeholder="Describe el compromiso..." autofocus></textarea>
+        </div>
+        <button class="compromiso-remove" type="button" onclick="this.closest('.compromiso-item').remove(); scheduleAutoSave();">×</button>
+      `;
+      container.appendChild(item);
+      item.querySelector(".compromiso-text").focus();
+      scheduleAutoSave();
+    }
+
+    function renderTimeline(entries) {
+      const container = document.getElementById("timelineContainer");
+      if (!container) return;
+      container.innerHTML = "";
+      if (!entries || entries.length === 0) return;
+
+      const timeline = document.createElement("div");
+      timeline.className = "timeline";
+      
+      (entries || []).forEach((entry) => {
+        const entryEl = document.createElement("div");
+        entryEl.className = "timeline-entry";
+        entryEl.dataset.time = entry.time || "";
+        entryEl.innerHTML = `
+          <div class="timeline-time">${escapeHtml(entry.time || "")}</div>
+          <div class="timeline-content">${escapeHtml(entry.content || "")}</div>
+          <button class="timeline-remove" type="button" onclick="this.closest('.timeline-entry').remove(); scheduleAutoSave();">×</button>
+        `;
+        timeline.appendChild(entryEl);
+      });
+      
+      container.appendChild(timeline);
+    }
+
+    function addTimelineEntry() {
+      const container = document.getElementById("timelineContainer");
+      if (!container) return;
+
+      let timeline = container.querySelector(".timeline");
+      if (!timeline) {
+        timeline = document.createElement("div");
+        timeline.className = "timeline";
+        container.appendChild(timeline);
+      }
+
+      const entryEl = document.createElement("div");
+      entryEl.className = "timeline-entry";
+      const now = new Date().toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" });
+      entryEl.dataset.time = now;
+      entryEl.innerHTML = `
+        <div class="timeline-time"><input type="text" value="${escapeHtml(now)}" style="border: 1px solid var(--pill-border); border-radius: 4px; padding: 4px; width: 100%; font: inherit; font-size: 11px; font-weight: 700; color: var(--orange-dark);" placeholder="Fecha y hora"></div>
+        <div class="timeline-content"><textarea style="border: 1px solid var(--pill-border); border-radius: 4px; padding: 4px; width: 100%; font: inherit; font-size: 12px; resize: vertical; min-height: 40px;" placeholder="Describe el avance..."></textarea></div>
+        <button class="timeline-remove" type="button" onclick="this.closest('.timeline-entry').remove(); scheduleAutoSave();">×</button>
+      `;
+      timeline.appendChild(entryEl);
+      entryEl.querySelector("textarea").focus();
+      scheduleAutoSave();
+    }
+
     function readCurrentIncident() {
       const data = { ...(getIncidents().find((item) => item.key === currentIncidentKey) || defaultIncident) };
 
       card.querySelectorAll("[data-field]").forEach((node) => {
         const key = node.dataset.field;
-        if (key === "phase") return;
+        if (key === "incidentType") return;
         if (node.tagName === "SELECT") data[key] = node.value;
         else if (node.tagName === "INPUT") data[key] = node.value;
         else data[key] = node.innerHTML.trim();
       });
 
-      data.phase = parseInt(document.getElementById("stepper").dataset.phase || "1", 10);
-
-      data.communities = Array.from(card.querySelectorAll("[data-community]"))
-        .map((node) => node.textContent.trim())
+      // Leer próximos pasos de Avance
+      data.avance_proximosPasos = Array.from(card.querySelectorAll(".paso-item .paso-text"))
+        .map((node) => node.value.trim())
         .filter(Boolean);
+
+      // Leer compromisos de Cierre
+      data.cierre_compromisos = Array.from(card.querySelectorAll(".compromiso-item .compromiso-text"))
+        .map((node) => node.value.trim())
+        .filter(Boolean);
+
+      // Leer timeline de Avance
+      data.avance_timeline = Array.from(card.querySelectorAll(".timeline-entry")).map((entry) => {
+        const timeInput = entry.querySelector(".timeline-time input");
+        const contentTextarea = entry.querySelector(".timeline-content textarea");
+        return {
+          time: timeInput?.value?.trim() || entry.dataset.time || "",
+          content: contentTextarea?.value?.trim() || entry.querySelector(".timeline-content")?.textContent?.trim() || ""
+        };
+      }).filter(e => e.time || e.content);
+
+      data.incidentType = document.querySelector('input[name="incidentType"]:checked')?.value || "apertura";
       data.updatedAt = new Date().toISOString();
       return data;
     }
@@ -914,15 +1319,22 @@
     function writeCurrentIncident(data) {
       card.querySelectorAll("[data-field]").forEach((node) => {
         const key = node.dataset.field;
-        if (key === "phase") return;
+        if (key === "incidentType") return;
         if (node.tagName === "SELECT") node.value = data[key] || node.options[0]?.value || "";
         else if (node.tagName === "INPUT") node.value = data[key] || "";
         else node.innerHTML = data[key] || "";
       });
 
       const stepper = document.getElementById("stepper");
-      stepper.dataset.phase = data.phase || 1;
-      updateStepperUI();
+      if (stepper) {
+        stepper.dataset.phase = data.phase || 1;
+        updateStepperUI();
+      }
+
+      // Set incident type
+      const incidentType = data.incidentType || "apertura";
+      document.querySelector(`input[name="incidentType"][value="${incidentType}"]`).checked = true;
+      setIncidentType(incidentType);
 
       const list = document.getElementById("communityList");
       const button = list.querySelector(".add-community");
@@ -932,6 +1344,15 @@
         const community = createCommunityNode(name);
         list.insertBefore(community, button);
       });
+
+      // Render próximos pasos
+      renderProximosPasos(data.avance_proximosPasos || []);
+
+      // Render compromisos
+      renderCompromisos(data.cierre_compromisos || []);
+
+      // Render timeline
+      renderTimeline(data.avance_timeline || []);
 
       renderLogo();
     }
@@ -955,6 +1376,7 @@
         sinceTime: now.toTimeString().slice(0, 5),
         reportTime: now.toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" }),
         updateNumber: "Update #1",
+        incidentType: "apertura",
         updatedAt: now.toISOString()
       };
       const incidents = getIncidents();
