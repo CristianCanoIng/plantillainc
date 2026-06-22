@@ -67,6 +67,9 @@
     .toolbar button:hover { background: #f3f4f6; }
     .toolbar button:active { transform: translateY(1px); }
 
+    .compensar-top { display: flex; align-items: center; margin-right: auto; }
+    .compensar-top img { max-height: 34px; object-fit: contain; }
+
     .toolbar button.primary {
       border-color: var(--orange);
       background: var(--orange);
@@ -486,6 +489,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
+  <div id="compensarLogoTop" class="compensar-top" aria-hidden="true"></div>
   <div class="toolbar" aria-label="Acciones de la plantilla">
     <button type="button" class="primary home-action" onclick="createIncident()">Nuevo incidente mayor</button>
     <button type="button" class="editor-action" onclick="goHome()">Volver</button>
@@ -735,13 +739,24 @@
 
     function renderLogo() {
       const slot = document.getElementById("logoSlot");
-      if (!slot || !LOGO_COMPENSAR_BASE64 || LOGO_COMPENSAR_BASE64.includes("REEMPLAZA")) return;
+      const top = document.getElementById("compensarLogoTop");
+      if (!LOGO_COMPENSAR_BASE64 || LOGO_COMPENSAR_BASE64.includes("REEMPLAZA")) return;
 
-      slot.innerHTML = "";
-      const img = document.createElement("img");
-      img.src = LOGO_COMPENSAR_BASE64;
-      img.alt = "Compensar";
-      slot.appendChild(img);
+      if (slot) {
+        slot.innerHTML = "";
+        const img = document.createElement("img");
+        img.src = LOGO_COMPENSAR_BASE64;
+        img.alt = "Compensar";
+        slot.appendChild(img);
+      }
+
+      if (top) {
+        top.innerHTML = "";
+        const imgTop = document.createElement("img");
+        imgTop.src = LOGO_COMPENSAR_BASE64;
+        imgTop.alt = "Compensar";
+        top.appendChild(imgTop);
+      }
     }
 
     function getIncidents() {
