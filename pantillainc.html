@@ -1103,6 +1103,9 @@
     card.addEventListener("input", scheduleAutoSave);
     card.addEventListener("change", scheduleAutoSave);
 
+    // Render logo immediately so it appears on the home view as well
+    renderLogo();
+
     renderIncidentList();
   </script>
 </body>
