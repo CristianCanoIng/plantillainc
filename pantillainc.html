@@ -93,7 +93,7 @@
       color: var(--muted); font-size: 11.5px; display: block;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .incident-actions { display: flex; align-items: center; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
+    .incident-actions { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
     .incident-status, .row-action {
       border: 1px solid var(--pill-border); border-radius: 999px; background: var(--pill);
       color: var(--orange-dark); font-size: 11px; font-weight: 700; padding: 5px 10px; white-space: nowrap;
@@ -680,7 +680,13 @@
       }
 
 
-      document.querySelectorAll(".type-tab").forEach(t => t.classList.toggle("active", t.dataset.type === type));
+      // Progreso visual: marcar como done los tabs completados o el tab actual
+      document.querySelectorAll(".type-tab").forEach(t => {
+        const tType = t.dataset.type;
+        const isDone = incidentStepOrder[tType] <= incidentStepOrder[type];
+        t.classList.toggle('done', isDone);
+        t.classList.toggle("active", tType === type);
+      });
       document.querySelectorAll(".type-section").forEach(s => s.classList.toggle("active", s.id === "section" + type.charAt(0).toUpperCase() + type.slice(1)));
 
       // Cambia el título según el tipo de comunicación
