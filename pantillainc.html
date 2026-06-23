@@ -687,7 +687,8 @@
         const tType = t.dataset.type;
         let isDone = false;
         if (tType === 'apertura') {
-          isDone = incidentStepOrder[type] >= incidentStepOrder.avance;
+          // Siempre mantener verde Apertura al estar en Apertura o Avance.
+          isDone = incidentStepOrder[type] >= incidentStepOrder.apertura;
         } else if (tType === 'avance') {
           if (incidentStepOrder[type] >= incidentStepOrder.avance) {
             const hasAvance = !!(
