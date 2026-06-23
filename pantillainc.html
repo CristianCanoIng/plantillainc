@@ -408,6 +408,7 @@
         <div class="siren" aria-hidden="true"></div>
         <div class="title-block">
           <div class="title" data-field="title" contenteditable="true">ACTUALIZACI&Oacute;N INCIDENTE MAYOR</div>
+
           <div class="incident-id">Incidente <span data-field="incidentId" contenteditable="true"></span></div>
         </div>
         <div class="logo-slot" id="logoSlot" aria-label="Logo Compensar">
@@ -416,19 +417,7 @@
       </header>
 
       <!-- META -->
-      <div class="meta-grid">
-        <div>
-          <div class="meta-label">Comunidad</div>
-          <div class="meta-value" data-field="community" contenteditable="true">UFA +3</div>
-        </div>
-        <div>
-          <div class="meta-label">Desde</div>
-          <div class="since-row">
-            <input type="date" data-field="sinceDate">
-            <input type="time" data-field="sinceTime">
-          </div>
-        </div>
-      </div>
+
 
       <!-- SHARED: Estado / Update / Comunidades -->
       <div class="shared-fields">
@@ -644,10 +633,11 @@
       if (_hasLS) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(incidents)); } catch(e){} }
     }
 
-    const defaultIncident = {
+      const defaultIncident = {
       key: "", title: "ACTUALIZACI&Oacute;N INCIDENTE MAYOR", incidentId: "",
-      community: "UFA +3", sinceDate: "", sinceTime: "",
+      sinceDate: "", sinceTime: "",
       incidentType: "apertura", reportTime: "", updateNumber: "Update #1",
+
       communities: ["UFA","Cliente","Salud","Bienestar"],
       apertura_fechaEvento: "", apertura_impactoPreliminar: "", apertura_horaInicio: "", apertura_servicio: "[Nombre del servicio]",
       avance_servicio: "[Nombre del servicio]", avance_descripcion: "", avance_causaProbable: "", avance_proximosPasos: [], avance_lider: "[Nombre]", avance_timeline: [],
@@ -673,8 +663,24 @@
     function setIncidentType(type) {
       document.querySelectorAll(".type-tab").forEach(t => t.classList.toggle("active", t.dataset.type === type));
       document.querySelectorAll(".type-section").forEach(s => s.classList.toggle("active", s.id === "section" + type.charAt(0).toUpperCase() + type.slice(1)));
+
+      // Cambia el título según el tipo de comunicación
+      const titleNode = card.querySelector("[data-field=\"title\"]");
+      if (titleNode) {
+        const titleByType = {
+          apertura: "APERTURA INCIDENTE MAYOR",
+          avance: "AVANCE INCIDENTE MAYOR",
+          cierre: "CIERRE INCIDENTE MAYOR",
+        };
+        titleNode.innerHTML = titleByType[type]
+          ? titleByType[type]
+          : "ACTUALIZACI&Oacute;N INCIDENTE MAYOR";
+      }
+
+
       scheduleAutoSave();
     }
+
 
     /* ===== LIST ITEMS (próximos pasos / compromisos) ===== */
     function renderListItems(containerId, items, placeholder) {
@@ -738,12 +744,14 @@
     /* ===== READ / WRITE ===== */
     function readCurrentIncident() {
       const data = {...(getIncidents().find(i=>i.key===currentIncidentKey)||defaultIncident)};
+
       card.querySelectorAll("[data-field]").forEach(node => {
         const key = node.dataset.field;
         if (node.tagName==="SELECT") data[key] = node.value;
         else if (node.tagName==="INPUT") data[key] = node.value;
         else data[key] = node.innerHTML.trim();
       });
+
       const activeTab = document.querySelector(".type-tab.active");
       data.incidentType = activeTab ? activeTab.dataset.type : "apertura";
 
