@@ -442,36 +442,7 @@
           </div>
         </div>
 
-        <div class="row">
-          <div class="icon icon-people" aria-hidden="true"></div>
-          <div>
-            <div class="field-line"><span class="label">Comunidad encargada / impactada:</span></div>
-            <div class="community-list" id="communityList">
-              <span class="community"><span class="mini-icon"></span><span data-community contenteditable="true">UFA</span><button class="remove" type="button" onclick="removeCommunity(this)">&times;</button></span>
-              <span class="community"><span class="mini-icon"></span><span data-community contenteditable="true">Cliente</span><button class="remove" type="button" onclick="removeCommunity(this)">&times;</button></span>
-              <span class="community"><span class="mini-icon"></span><span data-community contenteditable="true">Salud</span><button class="remove" type="button" onclick="removeCommunity(this)">&times;</button></span>
-              <span class="community"><span class="mini-icon"></span><span data-community contenteditable="true">Bienestar</span><button class="remove" type="button" onclick="removeCommunity(this)">&times;</button></span>
-              <button class="add-community" type="button" onclick="addCommunity()">+ Comunidad</button>
-            </div>
-          </div>
-        </div>
 
-        <div class="row">
-          <div class="icon icon-status" aria-hidden="true"></div>
-          <div class="field-line">
-            <span class="label">Estado:</span>
-            <select data-field="status" onchange="document.querySelector('[data-field=statusLabel]').textContent=this.value; scheduleAutoSave()">
-              <option>En Diagnostico</option>
-              <option>Identificado</option>
-              <option>En Mitigacion</option>
-              <option>Con Proveedor</option>
-              <option>En Validacion</option>
-              <option>Monitoreo</option>
-              <option>Resuelto</option>
-            </select>
-            <span class="status-badge"><span class="dot"></span><span data-field="statusLabel" contenteditable="true">En Diagnostico</span></span>
-          </div>
-        </div>
       </div>
 
       <!-- TYPE SELECTOR -->
@@ -678,7 +649,6 @@
       community: "UFA +3", sinceDate: "", sinceTime: "",
       incidentType: "apertura", reportTime: "", updateNumber: "Update #1",
       communities: ["UFA","Cliente","Salud","Bienestar"],
-      status: "En Diagnostico", statusLabel: "En Diagnostico",
       apertura_fechaEvento: "", apertura_impactoPreliminar: "", apertura_horaInicio: "", apertura_servicio: "[Nombre del servicio]",
       avance_servicio: "[Nombre del servicio]", avance_descripcion: "", avance_causaProbable: "", avance_proximosPasos: [], avance_lider: "[Nombre]", avance_timeline: [],
       cierre_horaInicio: "", cierre_horaFinal: "", cierre_areaResponsable: "[&Aacute;rea TI]", cierre_causaRaiz: "", cierre_tipoSolucion: "[Tipo de Soluci&oacute;n]", cierre_solucionAplicada: "", cierre_compromisos: [],
@@ -776,7 +746,7 @@
       });
       const activeTab = document.querySelector(".type-tab.active");
       data.incidentType = activeTab ? activeTab.dataset.type : "apertura";
-      data.communities = Array.from(card.querySelectorAll("[data-community]")).map(n=>n.textContent.trim()).filter(Boolean);
+
       data.avance_proximosPasos = Array.from(document.querySelectorAll("#proximosPasosContainer .list-item-text")).map(n=>n.value.trim()).filter(Boolean);
       data.cierre_compromisos = Array.from(document.querySelectorAll("#compromisosContainer .list-item-text")).map(n=>n.value.trim()).filter(Boolean);
       data.avance_timeline = Array.from(document.querySelectorAll("#timelineList .timeline-entry")).map(e=>({
@@ -796,35 +766,14 @@
       });
       const type = data.incidentType||"apertura";
       setIncidentType(type);
-      const list = document.getElementById("communityList");
-      const btn = list.querySelector(".add-community");
-      list.querySelectorAll(".community").forEach(n=>n.remove());
-      (data.communities?.length ? data.communities : ["Nueva"]).forEach(name => {
-        list.insertBefore(createCommunityNode(name), btn);
-      });
+
       renderListItems("proximosPasosContainer", data.avance_proximosPasos||[], "Describe el pr\u00f3ximo paso...");
       renderListItems("compromisosContainer", data.cierre_compromisos||[], "Describe el compromiso...");
       renderTimeline(data.avance_timeline||[]);
       renderLogo();
     }
 
-    /* ===== COMMUNITY ===== */
-    function createCommunityNode(name) {
-      const span = document.createElement("span");
-      span.className = "community";
-      span.innerHTML = '<span class="mini-icon"></span><span data-community contenteditable="true"></span><button class="remove" type="button" onclick="removeCommunity(this)">&times;</button>';
-      span.querySelector("[data-community]").textContent = name;
-      return span;
-    }
-    function addCommunity() {
-      const list = document.getElementById("communityList");
-      const btn = list.querySelector(".add-community");
-      const node = createCommunityNode("Nueva");
-      list.insertBefore(node, btn);
-      node.querySelector('[contenteditable="true"]').focus();
-      scheduleAutoSave();
-    }
-    function removeCommunity(btn) { btn.closest(".community").remove(); scheduleAutoSave(); }
+
 
     /* ===== CRUD ===== */
     function createIncident() {
@@ -925,7 +874,7 @@
       const search = document.getElementById("incidentSearch").value.trim().toLowerCase();
       const incidents = getIncidents();
       const filtered = incidents.filter(item=>{
-        const h=[item.incidentId,item.title,item.status,item.apertura_servicio,item.avance_servicio,item.avance_lider,item.communities?.join(" ")].join(" ").toLowerCase();
+        const h=[item.incidentId,item.title,item.apertura_servicio,item.avance_servicio,item.avance_lider,(item.communities||[]).join(" ")].join(" ").toLowerCase();
         return h.includes(search);
       });
       counter.textContent=`${incidents.length} incidente${incidents.length===1?"":"s"} guardado${incidents.length===1?"":"s"}`;
@@ -942,7 +891,8 @@
             <span class="incident-summary">${escapeHtml(leader)} &middot; ${escapeHtml(item.communities?.join(", ")||"Sin comunidad")} &middot; ${escapeHtml(typeLabels[item.incidentType]||"")} &middot; ${escapeHtml(formatDate(item.updatedAt))}</span>
           </button>
           <span class="incident-actions">
-            <span class="incident-status">${escapeHtml(item.statusLabel||item.status||"Sin estado")}</span>
+            <span class="incident-status">&nbsp;</span>
+
             <button class="row-action" type="button" onclick="openIncident('${item.key}')">Editar</button>
             <button class="row-action" type="button" onclick="downloadIncident('${item.key}')">Descargar</button>
             <button class="row-action danger" type="button" onclick="deleteIncident('${item.key}')">Eliminar</button>
