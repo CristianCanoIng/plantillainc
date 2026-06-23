@@ -680,10 +680,32 @@
       }
 
 
-      // Progreso visual: marcar como done los tabs completados o el tab actual
+      // Progreso visual: 
+      // - Apertura: siempre en verde cuando el tipo actual es avance o cierre.
+      // - Avance: en verde SOLO si hay contenido en Avance (servicio/descripcion/causa/leader o proximos pasos o timeline).
       document.querySelectorAll(".type-tab").forEach(t => {
         const tType = t.dataset.type;
-        const isDone = incidentStepOrder[tType] <= incidentStepOrder[type];
+        let isDone = false;
+        if (tType === 'apertura') {
+          isDone = incidentStepOrder[type] >= incidentStepOrder.avance;
+        } else if (tType === 'avance') {
+          if (incidentStepOrder[type] >= incidentStepOrder.avance) {
+            const hasAvance = !!(
+              plainText(card.querySelector('[data-field="avance_servicio"]')?.innerText || '') ||
+              plainText(card.querySelector('[data-field="avance_descripcion"]')?.innerText || '') ||
+              plainText(card.querySelector('[data-field="avance_causaProbable"]')?.innerText || '') ||
+              plainText(card.querySelector('[data-field="avance_lider"]')?.innerText || '') ||
+              Array.from(document.querySelectorAll('#proximosPasosContainer .list-item-text textarea, #proximosPasosContainer .list-item-text input')).some(el => (el.value||'').trim().length>0) ||
+              Array.from(document.querySelectorAll('#timelineList .timeline-entry')).some(e => {
+                const ta = e.querySelector('.timeline-content textarea');
+                const time = e.querySelector('.timeline-time input');
+                return (ta?.value||'').trim().length>0 || (time?.value||'').trim().length>0;
+              })
+            );
+            isDone = hasAvance;
+          }
+        }
+
         t.classList.toggle('done', isDone);
         t.classList.toggle("active", tType === type);
       });
