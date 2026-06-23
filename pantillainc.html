@@ -539,7 +539,7 @@
           <div class="icon icon-clock" aria-hidden="true"></div>
           <div style="width:100%">
             <div class="field-line">
-              <span class="label">L&iacute;nea de tiempo de avances:</span>
+              <span class="label">Avances:</span>
             </div>
             <div class="timeline-wrap">
               <div class="timeline-list" id="timelineList"></div>
@@ -557,10 +557,10 @@
           <div class="icon icon-clock" aria-hidden="true"></div>
           <div class="field-line">
             <span class="label">Hora inicio afectaci&oacute;n:</span>
-            <input type="time" data-field="cierre_horaInicio" style="border:1px solid var(--pill-border);border-radius:7px;background:var(--pill);padding:6px 8px;font:inherit;color:#555;">
+            <input type="datetime-local" data-field="cierre_horaInicio" style="border:1px solid var(--pill-border);border-radius:7px;background:var(--pill);padding:6px 8px;font:inherit;color:#555;">
             <span class="pipe">|</span>
             <span class="label">Hora final:</span>
-            <input type="time" data-field="cierre_horaFinal" style="border:1px solid var(--pill-border);border-radius:7px;background:var(--pill);padding:6px 8px;font:inherit;color:#555;">
+            <input type="datetime-local" data-field="cierre_horaFinal" style="border:1px solid var(--pill-border);border-radius:7px;background:var(--pill);padding:6px 8px;font:inherit;color:#555;">
           </div>
         </div>
 
@@ -660,7 +660,26 @@
     }
 
     /* ===== TYPE TABS ===== */
+    // "Progresivo": apertura -> avance -> cierre
+    const incidentStepOrder = { apertura: 1, avance: 2, cierre: 3 };
     function setIncidentType(type) {
+      const activeTab = document.querySelector(".type-tab.active");
+      const currentType = activeTab ? activeTab.dataset.type : "apertura";
+
+      // evita saltos hacia adelante fuera de orden
+      const canGoTo = incidentStepOrder[type] <= (incidentStepOrder[currentType] + 1);
+      if (!canGoTo && currentType !== type) {
+        alert("Primero diligencia la comunicación en orden: Apertura → Avance → Cierre.");
+        return;
+      }
+
+      // si se intenta ir a CIERRE, pedir confirmación
+      if (type === "cierre" && currentType !== "cierre") {
+        const ok = confirm("Al diligenciar Cierre se registrará la información de finalización del incidente. ¿Confirmas continuar?");
+        if (!ok) return;
+      }
+
+
       document.querySelectorAll(".type-tab").forEach(t => t.classList.toggle("active", t.dataset.type === type));
       document.querySelectorAll(".type-section").forEach(s => s.classList.toggle("active", s.id === "section" + type.charAt(0).toUpperCase() + type.slice(1)));
 
@@ -672,14 +691,12 @@
           avance: "AVANCE INCIDENTE MAYOR",
           cierre: "CIERRE INCIDENTE MAYOR",
         };
-        titleNode.innerHTML = titleByType[type]
-          ? titleByType[type]
-          : "ACTUALIZACI&Oacute;N INCIDENTE MAYOR";
+        titleNode.innerHTML = titleByType[type] ? titleByType[type] : "ACTUALIZACI&Oacute;N INCIDENTE MAYOR";
       }
-
 
       scheduleAutoSave();
     }
+
 
 
     /* ===== LIST ITEMS (próximos pasos / compromisos) ===== */
