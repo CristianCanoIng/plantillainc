@@ -408,7 +408,6 @@
         <div class="siren" aria-hidden="true"></div>
         <div class="title-block">
           <div class="title" data-field="title" contenteditable="true">ACTUALIZACI&Oacute;N INCIDENTE MAYOR</div>
-
           <div class="incident-id">Incidente <span data-field="incidentId" contenteditable="true"></span></div>
         </div>
         <div class="logo-slot" id="logoSlot" aria-label="Logo Compensar">
@@ -417,7 +416,19 @@
       </header>
 
       <!-- META -->
-
+      <div class="meta-grid">
+        <div>
+          <div class="meta-label">Comunidad</div>
+          <div class="meta-value" data-field="community" contenteditable="true">UFA +3</div>
+        </div>
+        <div>
+          <div class="meta-label">Desde</div>
+          <div class="since-row">
+            <input type="date" data-field="sinceDate">
+            <input type="time" data-field="sinceTime">
+          </div>
+        </div>
+      </div>
 
       <!-- SHARED: Estado / Update / Comunidades -->
       <div class="shared-fields">
@@ -539,7 +550,7 @@
           <div class="icon icon-clock" aria-hidden="true"></div>
           <div style="width:100%">
             <div class="field-line">
-              <span class="label">Avances:</span>
+              <span class="label">L&iacute;nea de tiempo de avances:</span>
             </div>
             <div class="timeline-wrap">
               <div class="timeline-list" id="timelineList"></div>
@@ -557,10 +568,10 @@
           <div class="icon icon-clock" aria-hidden="true"></div>
           <div class="field-line">
             <span class="label">Hora inicio afectaci&oacute;n:</span>
-            <input type="datetime-local" data-field="cierre_horaInicio" style="border:1px solid var(--pill-border);border-radius:7px;background:var(--pill);padding:6px 8px;font:inherit;color:#555;">
+            <input type="time" data-field="cierre_horaInicio" style="border:1px solid var(--pill-border);border-radius:7px;background:var(--pill);padding:6px 8px;font:inherit;color:#555;">
             <span class="pipe">|</span>
             <span class="label">Hora final:</span>
-            <input type="datetime-local" data-field="cierre_horaFinal" style="border:1px solid var(--pill-border);border-radius:7px;background:var(--pill);padding:6px 8px;font:inherit;color:#555;">
+            <input type="time" data-field="cierre_horaFinal" style="border:1px solid var(--pill-border);border-radius:7px;background:var(--pill);padding:6px 8px;font:inherit;color:#555;">
           </div>
         </div>
 
@@ -633,11 +644,10 @@
       if (_hasLS) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(incidents)); } catch(e){} }
     }
 
-      const defaultIncident = {
+    const defaultIncident = {
       key: "", title: "ACTUALIZACI&Oacute;N INCIDENTE MAYOR", incidentId: "",
-      sinceDate: "", sinceTime: "",
+      community: "UFA +3", sinceDate: "", sinceTime: "",
       incidentType: "apertura", reportTime: "", updateNumber: "Update #1",
-
       communities: ["UFA","Cliente","Salud","Bienestar"],
       apertura_fechaEvento: "", apertura_impactoPreliminar: "", apertura_horaInicio: "", apertura_servicio: "[Nombre del servicio]",
       avance_servicio: "[Nombre del servicio]", avance_descripcion: "", avance_causaProbable: "", avance_proximosPasos: [], avance_lider: "[Nombre]", avance_timeline: [],
@@ -660,44 +670,11 @@
     }
 
     /* ===== TYPE TABS ===== */
-    // "Progresivo": apertura -> avance -> cierre
-    const incidentStepOrder = { apertura: 1, avance: 2, cierre: 3 };
     function setIncidentType(type) {
-      const activeTab = document.querySelector(".type-tab.active");
-      const currentType = activeTab ? activeTab.dataset.type : "apertura";
-
-      // evita saltos hacia adelante fuera de orden
-      const canGoTo = incidentStepOrder[type] <= (incidentStepOrder[currentType] + 1);
-      if (!canGoTo && currentType !== type) {
-        alert("Primero diligencia la comunicación en orden: Apertura → Avance → Cierre.");
-        return;
-      }
-
-      // si se intenta ir a CIERRE, pedir confirmación
-      if (type === "cierre" && currentType !== "cierre") {
-        const ok = confirm("Al diligenciar Cierre se registrará la información de finalización del incidente. ¿Confirmas continuar?");
-        if (!ok) return;
-      }
-
-
       document.querySelectorAll(".type-tab").forEach(t => t.classList.toggle("active", t.dataset.type === type));
       document.querySelectorAll(".type-section").forEach(s => s.classList.toggle("active", s.id === "section" + type.charAt(0).toUpperCase() + type.slice(1)));
-
-      // Cambia el título según el tipo de comunicación
-      const titleNode = card.querySelector("[data-field=\"title\"]");
-      if (titleNode) {
-        const titleByType = {
-          apertura: "APERTURA INCIDENTE MAYOR",
-          avance: "AVANCE INCIDENTE MAYOR",
-          cierre: "CIERRE INCIDENTE MAYOR",
-        };
-        titleNode.innerHTML = titleByType[type] ? titleByType[type] : "ACTUALIZACI&Oacute;N INCIDENTE MAYOR";
-      }
-
       scheduleAutoSave();
     }
-
-
 
     /* ===== LIST ITEMS (próximos pasos / compromisos) ===== */
     function renderListItems(containerId, items, placeholder) {
@@ -761,14 +738,12 @@
     /* ===== READ / WRITE ===== */
     function readCurrentIncident() {
       const data = {...(getIncidents().find(i=>i.key===currentIncidentKey)||defaultIncident)};
-
       card.querySelectorAll("[data-field]").forEach(node => {
         const key = node.dataset.field;
         if (node.tagName==="SELECT") data[key] = node.value;
         else if (node.tagName==="INPUT") data[key] = node.value;
         else data[key] = node.innerHTML.trim();
       });
-
       const activeTab = document.querySelector(".type-tab.active");
       data.incidentType = activeTab ? activeTab.dataset.type : "apertura";
 
