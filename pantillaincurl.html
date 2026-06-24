@@ -483,6 +483,11 @@
     <button type="button" class="primary home-action" onclick="createIncident()">+ Nuevo incidente mayor</button>
     <button type="button" class="editor-action" onclick="goHome()">&#8592; Volver</button>
     <button type="button" class="primary editor-action" onclick="saveCurrentIncident()">Guardar cambios</button>
+    
+  <button type="button" class="editor-action" onclick="copyManagerLink(currentKey)">
+    🔗
+  </button>
+
     <button type="button" class="editor-action" onclick="downloadIncidentImage(currentKey)">Descargar imagen</button>
     <button type="button" class="editor-action" onclick="window.print()">Imprimir / PDF</button>
     <button type="button" class="danger editor-action" onclick="deleteCurrentIncident()">Eliminar INC</button>
@@ -992,19 +997,27 @@ function updateStepperUI(type) {
   }
 }
 function getManagerViewLink(key) {
-  return `${window.location.origin}/plantillaincvistauni.html#${key}`;
+  const basePath = window.location.pathname.replace(/[^/]+$/, "");
+  return `${window.location.origin}${basePath}plantillaincvistauni.html#${key}`;
 }
+
 function copyManagerLink(key) {
+  if (!key) {
+    showSync("No hay incidente seleccionado", true);
+    return;
+  }
+
   const link = getManagerViewLink(key);
 
   navigator.clipboard.writeText(link)
     .then(() => {
-      showSync("Link gerencial copiado ✅");
+      showSync("Se ha copiado al portapapeles para visualizar en el panel ✅");
     })
     .catch(() => {
-      prompt("Copia este link:", link);
+      prompt("Copia este link para visualizar en el panel:", link);
     });
 }
+``
 function setIncidentType(type) {
   updateStepperUI(type);
   syncTitleWithType(type);
@@ -1423,12 +1436,14 @@ function renderIncidentList() {
           <strong>${esc(plain(item.incidentId) || "Sin INC")} &mdash; ${esc(service)}</strong>
           <span class="incident-summary">${esc(leader)} &middot; ${esc(fmt(item.updatedAt))}</span>
         </button>
-        <span class="incident-actions">
-          <span class="${typeCls[t] || 'type-badge-apertura'}">${esc(typeLabels[t] || t)}</span>
-          <button class="row-action" type="button" onclick="openIncident('${item.key}')">Editar</button>
-          <button class="row-action" type="button" onclick="downloadIncidentImage('${item.key}')">Descargar .png</button>
-          <button class="row-action danger" type="button" onclick="deleteIncident('${item.key}')">Eliminar</button>
-        </span>`;
+<span class="incident-actions">
+  <span class="${typeCls[t] || 'type-badge-apertura'}">${esc(typeLabels[t] || t)}</span>
+  <button class="row-action" type="button" onclick="openIncident('${item.key}')">Editar</button>
+  <button class="row-action" type="button" onclick="copyManagerLink('${item.key}')">Copiar link panel</button>
+  <button class="row-action" type="button" onclick="downloadIncidentImage('${item.key}')">Descargar .png</button>
+  <button class="row-action danger" type="button" onclick="deleteIncident('${item.key}')">Eliminar</button>
+</span>
+`;
 
       list.appendChild(row);
     });
