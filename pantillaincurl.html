@@ -1439,7 +1439,7 @@ function renderIncidentList() {
 <span class="incident-actions">
   <span class="${typeCls[t] || 'type-badge-apertura'}">${esc(typeLabels[t] || t)}</span>
   <button class="row-action" type="button" onclick="openIncident('${item.key}')">Editar</button>
-  <button class="row-action" type="button" onclick="copyManagerLink('${item.key}')">Copiar link panel</button>
+  <button class="row-action" type="button" onclick="copyManagerLink('${item.key}')">🔗</button>
   <button class="row-action" type="button" onclick="downloadIncidentImage('${item.key}')">Descargar .png</button>
   <button class="row-action danger" type="button" onclick="deleteIncident('${item.key}')">Eliminar</button>
 </span>
