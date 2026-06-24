@@ -1356,6 +1356,26 @@ function downloadIncidentImage(key) {
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
       }).catch(()=>alert("Error al generar imagen."));
     }
+    function openFromURLManagers() {
+  const key = window.location.hash.replace("#", "");
+  if (!key) return;
+
+  const tryLoad = () => {
+    const item = getAll().find(i => i.key === key);
+
+    if (item) {
+      openIncident(key); // ✅ IMPORTANTE usar esta, no writeCurrent
+      return true;
+    }
+    return false;
+  };
+
+  // intento inmediato
+  if (!tryLoad()) {
+    // reintento por Firebase
+    setTimeout(tryLoad, 1200);
+  }
+}
 
     /* ============================================================
        LIST
@@ -1406,7 +1426,7 @@ function renderIncidentList() {
         <span class="incident-actions">
           <span class="${typeCls[t] || 'type-badge-apertura'}">${esc(typeLabels[t] || t)}</span>
           <button class="row-action" type="button" onclick="openIncident('${item.key}')">Editar</button>
-          <button class="row-action" type="button" onclick="downloadIncidentImage('${item.key}')">Descargar .png</button>
+          <button onclick="downloadIncidentImage(currentKey)">Descargar imagen</button>
           <button class="row-action danger" type="button" onclick="deleteIncident('${item.key}')">Eliminar</button>
         </span>`;
 
@@ -1438,11 +1458,17 @@ document.getElementById("sharedServicioChip")?.addEventListener("input", () => {
   refreshStepperState();
   scheduleAutoSave();
 });
-
 renderLogos("apertura");
 initAnonymousAuth();
 
-if (!useFirebase) renderIncidentList();
+if (!useFirebase) {
+  renderIncidentList();
+  openFromURLManagers(); // ✅ local
+} else {
+  // ✅ Firebase necesita espera
+  setTimeout(openFromURLManagers, 1000);
+}
+
   </script>
 </body>
 </html>
