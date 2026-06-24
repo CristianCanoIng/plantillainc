@@ -1048,19 +1048,16 @@ function openFromURLManagers() {
     const item = getAll().find(i => i.key === key);
 
     if (item) {
-      writeCurrent(item);
+      openDetailByKey(key); // ✅ ESTA ES LA CLAVE
       return true;
     }
     return false;
   };
 
-  // intenta inmediato
   if (!tryLoad()) {
-    // por si Firebase aún no carga
-    setTimeout(tryLoad, 1000);
+    setTimeout(tryLoad, 1200);
   }
 }
-``
 
     function renderSimpleList(arr) {
       const items = Array.isArray(arr) ? arr.filter(Boolean) : [];
