@@ -483,7 +483,7 @@
     <button type="button" class="primary home-action" onclick="createIncident()">+ Nuevo incidente mayor</button>
     <button type="button" class="editor-action" onclick="goHome()">&#8592; Volver</button>
     <button type="button" class="primary editor-action" onclick="saveCurrentIncident()">Guardar cambios</button>
-    <button type="button" class="editor-action" onclick="downloadAsImage()">Descargar imagen</button>
+    <button type="button" class="editor-action" onclick="downloadIncidentImage(currentKey)">Descargar imagen</button>
     <button type="button" class="editor-action" onclick="window.print()">Imprimir / PDF</button>
     <button type="button" class="danger editor-action" onclick="deleteCurrentIncident()">Eliminar INC</button>
   </div>
@@ -1426,7 +1426,7 @@ function renderIncidentList() {
         <span class="incident-actions">
           <span class="${typeCls[t] || 'type-badge-apertura'}">${esc(typeLabels[t] || t)}</span>
           <button class="row-action" type="button" onclick="openIncident('${item.key}')">Editar</button>
-          <button onclick="downloadIncidentImage(currentKey)">Descargar imagen</button>
+          <button class="row-action" type="button" onclick="downloadIncidentImage('${item.key}')">Descargar .png</button>
           <button class="row-action danger" type="button" onclick="deleteIncident('${item.key}')">Eliminar</button>
         </span>`;
 
