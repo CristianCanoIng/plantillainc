@@ -7,6 +7,10 @@
   <title>Incidentes Mayores - Compensar</title>
   <style>
     :root {
+      --step-green: #22c55e;
+      --step-green-dark: #15803d;
+      --step-green-soft: #ecfdf5;
+      --step-green-border: #86efac;
       --orange: #e07b39;
       --orange-dark: #c25f1f;
       --orange-soft: #fdf1e6;
@@ -107,9 +111,18 @@
     .incident-item strong { display: block; color: var(--ink); font-size: 13.5px; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
     .incident-summary { color: var(--muted); font-size: 11.5px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .incident-actions { display: flex; align-items: center; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
-    .type-badge-apertura { background: #fff3e0; color: #c25f1f; border: 1px solid #f0c8a5; border-radius: 999px; font-size: 11px; font-weight: 800; padding: 3px 10px; white-space: nowrap; }
-    .type-badge-avance   { background: #e8f4fd; color: #2563a8; border: 1px solid #b3d4f0; border-radius: 999px; font-size: 11px; font-weight: 800; padding: 3px 10px; white-space: nowrap; }
-    .type-badge-cierre   { background: #e6f9f1; color: #1a7a52; border: 1px solid #9de2c4; border-radius: 999px; font-size: 11px; font-weight: 800; padding: 3px 10px; white-space: nowrap; }
+    .type-badge-apertura,
+.type-badge-avance,
+.type-badge-cierre {
+  background: var(--step-green-soft);
+  color: var(--step-green-dark);
+  border: 1px solid var(--step-green-border);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
     .row-action { border: 1px solid var(--pill-border); border-radius: 999px; background: #fff; color: #3d4349; font-size: 11px; font-weight: 700; padding: 5px 10px; white-space: nowrap; cursor: pointer; }
     .row-action:hover { background: #f6f7f8; }
     .row-action.danger { border-color: #f0c6cf; color: #b42343; }
@@ -178,12 +191,168 @@
     [contenteditable="true"] { outline: 0; }
     [contenteditable="true"]:focus { box-shadow: 0 0 0 2px rgba(224,123,57,.18); border-radius: 4px; }
 
-    /* ===== TYPE SECTIONS ===== */
-    .type-section { display: none; }
-    .type-section.active { display: block; animation: fadeIn .2s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-    .section-header { display: flex; align-items: center; gap: 10px; padding: 14px 0 10px; border-bottom: 2px solid var(--orange-soft); margin-bottom: 4px; }
-    .section-badge { font-size: 10px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--orange-dark); background: var(--orange-soft); border: 1px solid #f0c8a5; border-radius: 6px; padding: 3px 8px; }
+/* ===== TYPE SELECTOR / STEPPER ===== */
+.type-wrap {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.type-title {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: #8a8f98;
+  margin-bottom: 14px;
+}
+
+.stepper {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  align-items: start;
+  padding-top: 2px;
+}
+
+.stepper .line {
+  position: absolute;
+  top: 18px;
+  left: 16.66%;
+  right: 16.66%;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.stepper .progress {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  transition: width .28s ease;
+}
+
+/* estilo tipo premium como el de la imagen */
+.premium .progress {
+  background: linear-gradient(90deg, #22c55e, #10b981);
+}
+
+.step {
+  position: relative;
+  z-index: 1;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font: inherit;
+  color: #9aa0a8;
+}
+
+.step:hover .step-circle {
+  border-color: var(--orange);
+}
+
+.step-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  background: #fff;
+  color: #6b7280;
+  border: 2px solid #d1d5db;
+  transition: all .18s ease;
+}
+
+.premium .step-circle {
+  background: #fff;
+  border: 2px solid #d1d5db;
+}
+
+.step-text {
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: center;
+  color: #8a8f98;
+  transition: color .18s ease;
+}
+
+.step.active .step-text,
+.step.done .step-text {
+  color: var(--step-green-dark);
+}
+
+.premium .step-circle.active {
+  border: 3px solid #22c55e;
+  box-shadow: 0 0 0 10px rgba(34, 197, 94, .1);
+  color: #15803d;
+}
+
+.step.done .step-circle {
+  background: linear-gradient(90deg, #22c55e, #10b981);
+  border-color: #22c55e;
+  color: #fff;
+  box-shadow: 0 0 0 6px rgba(34, 197, 94, .08);
+}
+
+@media (max-width: 620px) {
+  .stepper {
+    gap: 4px;
+  }
+
+  .stepper .line {
+    left: 18%;
+    right: 18%;
+  }
+
+  .step-circle {
+    width: 34px;
+    height: 34px;
+  }
+
+  .step-text {
+    font-size: 11.5px;
+  }
+}
+
+/* ===== TYPE SECTIONS ===== */
+.type-section {
+  display: none;
+}
+.type-section.active {
+  display: block;
+  animation: fadeIn .2s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0 10px;
+  border-bottom: 2px solid var(--orange-soft);
+  margin-bottom: 4px;
+}
+.section-badge {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--step-green-dark);
+  background: var(--step-green-soft);
+  border: 1px solid var(--step-green-border);
+  border-radius: 6px;
+  padding: 3px 8px;
+}
 
     /* ===== LIST ITEMS ===== */
     .list-items-container { margin-top: 8px; }
@@ -209,6 +378,27 @@
     .timeline-remove:hover { background: rgba(210,58,85,.1); }
     .timeline-empty { color: var(--muted); font-size: 12px; padding: 12px 0; text-align: center; }
 
+    .timeline-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 8px;
+    }
+
+.btn-toggle-timeline {
+  border: 1px solid var(--pill-border);
+  border-radius: 7px;
+  background: #fff;
+  color: #3d4349;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  min-height: 28px;
+}
+
+.btn-toggle-timeline:hover {
+  background: #f6f7f8;
+}
     /* ===== MEDIA ===== */
     @media (max-width: 620px) {
       .incident-card { padding: 18px 15px; }
@@ -232,10 +422,12 @@
       .list-item-remove, .timeline-remove, .btn-add-item { display: none; }
       [contenteditable] { border: none !important; box-shadow: none !important; }
     }
+
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 </head>
 <body>
   <div class="sync-bar" id="syncBar"></div>
@@ -247,10 +439,9 @@
     <button type="button" class="primary home-action" onclick="createIncident()">+ Nuevo incidente mayor</button>
     <button type="button" class="editor-action" onclick="goHome()">&#8592; Volver</button>
     <button type="button" class="primary editor-action" onclick="saveCurrentIncident()">Guardar cambios</button>
-    <button type="button" class="editor-action" onclick="downloadCurrentIncident()">Descargar HTML</button>
     <button type="button" class="editor-action" onclick="downloadAsImage()">Descargar imagen</button>
     <button type="button" class="editor-action" onclick="window.print()">Imprimir / PDF</button>
-    <button type="button" class="danger editor-action" onclick="deleteCurrentIncident()">Eliminar</button>
+    <button type="button" class="danger editor-action" onclick="deleteCurrentIncident()">Eliminar INC</button>
   </div>
 
   <section class="home">
@@ -269,61 +460,55 @@
   <main class="wrap">
     <section class="incident-card">
 
-      <!-- HEADER -->
-      <header class="header">
-        <div class="siren" aria-hidden="true"></div>
-        <div class="title-block">
-          <div class="title" data-field="title" contenteditable="true">ACTUALIZACI&Oacute;N INCIDENTE MAYOR</div>
-          <div class="incident-id">Incidente <span data-field="incidentId" contenteditable="true"></span></div>
-        </div>
-        <div class="logo-slot" id="logoSlot">
-          <div class="logo-placeholder">Logo Compensar</div>
-        </div>
-      </header>
+<header class="header">
+  <div class="siren" aria-hidden="true"></div>
+  <div class="title-block">
+    <div class="title" data-field="title">APERTURA INCIDENTE MAYOR</div>
+    <div class="incident-id">
+      <span data-field="incidentId" contenteditable="true">INC0000000000</span>
+    </div>
+  </div>
+  <div class="logo-slot" id="logoSlot">
+    <div class="logo-placeholder">Logo Compensar</div>
+  </div>
+</header>
 
-      <!-- META -->
-      <div class="meta-grid">
-        <div>
-          <div class="meta-label">Comunidad</div>
-          <div class="meta-value" data-field="community" contenteditable="true">UFA +3</div>
-        </div>
-        <div>
-          <div class="meta-label">Desde</div>
-          <div class="since-row">
-            <input type="date" data-field="sinceDate">
-            <input type="time" data-field="sinceTime">
-          </div>
-        </div>
-      </div>
+<div class="shared-fields">
+  <div class="row">
+    <div class="icon icon-service" aria-hidden="true"></div>
+    <div class="field-line">
+      <span class="label">Servicio afectado:</span>
+      <span class="editable-chip" id="sharedServicioChip" contenteditable="true">[Nombre del servicio]</span>
+      <span class="pipe">|</span>
+      <span class="label">Última actualización:</span>
+      <span class="pill" data-field="reportTime">18/06/2026 - 14:35</span>
+    </div>
+  </div>
+</div>
 
-      <!-- SHARED -->
-      <div class="shared-fields">
-        <div class="row">
-          <div class="icon icon-clock" aria-hidden="true"></div>
-          <div class="field-line">
-            <span class="label">&Uacute;ltima actualizaci&oacute;n:</span>
-            <span class="pill" data-field="reportTime" contenteditable="true">18/06/2026 - 14:35</span>
-            <span class="pipe">|</span>
-            <span class="pill" data-field="updateNumber" contenteditable="true">Update #1</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- TYPE SELECTOR -->
+       <!-- TYPE SELECTOR / STEPPER -->
       <div class="type-wrap">
-        <div class="type-title">Tipo de comunicaci&oacute;n</div>
-        <div class="type-tabs" id="typeTabs">
-          <div class="type-tab active" data-type="apertura" onclick="setIncidentType('apertura')">
-            <span class="tab-num">1</span> Apertura
+        <div class="type-title">Tipo de comunicación</div>
+
+        <div class="stepper premium" id="typeStepper">
+          <div class="line">
+            <div class="progress" id="stepperProgress"></div>
           </div>
-          <div class="tab-sep"></div>
-          <div class="type-tab" data-type="avance" onclick="setIncidentType('avance')">
-            <span class="tab-num">2</span> Avance
-          </div>
-          <div class="tab-sep"></div>
-          <div class="type-tab" data-type="cierre" onclick="setIncidentType('cierre')">
-            <span class="tab-num">3</span> Cierre
-          </div>
+
+          <button type="button" class="step active" data-type="apertura" onclick="setIncidentType('apertura')">
+            <div class="step-circle active">1</div>
+            <div class="step-text">Apertura</div>
+          </button>
+
+          <button type="button" class="step" data-type="avance" onclick="setIncidentType('avance')">
+            <div class="step-circle">2</div>
+            <div class="step-text">Avance</div>
+          </button>
+
+          <button type="button" class="step" data-type="cierre" onclick="setIncidentType('cierre')">
+            <div class="step-circle">3</div>
+            <div class="step-text">Cierre</div>
+          </button>
         </div>
       </div>
 
@@ -351,32 +536,29 @@
             <input type="time" data-field="apertura_horaInicio" style="border:1px solid var(--pill-border);border-radius:7px;background:var(--pill);padding:6px 8px;font:inherit;color:#555;">
           </div>
         </div>
-        <div class="row">
-          <div class="icon icon-service" aria-hidden="true"></div>
-          <div class="field-line">
-            <span class="label">Servicio afectado:</span>
-            <span class="editable-chip" data-field="apertura_servicio" contenteditable="true">[Nombre del servicio]</span>
-          </div>
-        </div>
       </div>
 
       <!-- AVANCE -->
       <div class="type-section" id="sectionAvance">
         <div class="section-header"><span class="section-badge">&#128200; Avance</span></div>
-        <div class="row">
-          <div class="icon icon-service" aria-hidden="true"></div>
-          <div class="field-line">
-            <span class="label">Servicio afectado:</span>
-            <span class="editable-chip" data-field="avance_servicio" contenteditable="true">[Nombre del servicio]</span>
+      <div class="row">
+        <div class="icon icon-clock" aria-hidden="true"></div>
+        <div style="width:100%">
+          <div class="field-line"><span class="label">Avances:</span></div>
+          <div class="timeline-wrap">
+            <div class="timeline-actions">
+              <button id="toggleTimelineBtn" class="btn-toggle-timeline" type="button" onclick="toggleTimelineEntries()"
+                hidden>
+                Ver todos los avances
+              </button>
+            </div>
+            <div class="timeline-list" id="timelineList"></div>
+            <button class="btn-add-item" type="button" onclick="addTimelineEntry()">
+              + Agregar avance
+            </button>
           </div>
         </div>
-        <div class="row">
-          <div class="icon icon-pin" aria-hidden="true"></div>
-          <div>
-            <div class="field-line"><span class="label">Avance / Descripci&oacute;n:</span></div>
-            <div class="textbox" data-field="avance_descripcion" contenteditable="true" data-placeholder="Describe el avance actual del incidente y acciones tomadas."></div>
-          </div>
-        </div>
+      </div>
         <div class="row">
           <div class="icon icon-puzzle" aria-hidden="true"></div>
           <div>
@@ -399,31 +581,22 @@
             <span class="editable-chip" data-field="avance_lider" contenteditable="true">[Nombre]</span>
           </div>
         </div>
-        <div class="row">
-          <div class="icon icon-clock" aria-hidden="true"></div>
-          <div style="width:100%">
-            <div class="field-line"><span class="label">L&iacute;nea de tiempo de avances:</span></div>
-            <div class="timeline-wrap">
-              <div class="timeline-list" id="timelineList"></div>
-              <button class="btn-add-item" type="button" onclick="addTimelineEntry()">+ Agregar avance</button>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- CIERRE -->
       <div class="type-section" id="sectionCierre">
         <div class="section-header"><span class="section-badge">&#10003; Cierre</span></div>
         <div class="row">
-          <div class="icon icon-clock" aria-hidden="true"></div>
-          <div class="field-line">
-            <span class="label">Hora inicio afectaci&oacute;n:</span>
-            <input type="time" data-field="cierre_horaInicio" style="border:1px solid var(--pill-border);border-radius:7px;background:var(--pill);padding:6px 8px;font:inherit;color:#555;">
-            <span class="pipe">|</span>
-            <span class="label">Hora final:</span>
-            <input type="time" data-field="cierre_horaFinal" style="border:1px solid var(--pill-border);border-radius:7px;background:var(--pill);padding:6px 8px;font:inherit;color:#555;">
-          </div>
-        </div>
+        <div class="icon icon-clock" aria-hidden="true"></div>
+        <div class="field-line">
+    <span class="label">Fecha y hora inicio afectación:</span>
+    <input type="datetime-local" data-field="cierre_horaInicio" style="border:1px solid var(--pill-border);border-radius:7px;background:var(--pill);padding:6px 8px;font:inherit;color:#555;">
+    <span class="pipe">|</span>
+    <span class="label">Fecha y hora final:</span>
+    <input type="datetime-local" data-field="cierre_horaFinal" style="border:1px solid var(--pill-border);border-radius:7px;background:var(--pill);padding:6px 8px;font:inherit;color:#555;">
+  </div>
+</div>
+
         <div class="row">
           <div class="icon icon-people" aria-hidden="true"></div>
           <div class="field-line">
@@ -484,17 +657,21 @@
       appId: "1:506442949906:web:b841613f138aee95cbffcb"
     };
 
-    let db;
-    let useFirebase = false;
-    let _localCache = [];
+  let db;
+let auth = null;
+let useFirebase = false;
+let authReady = false;
+let dbListenerStarted = false;
+let _localCache = [];
 
-    try {
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.database();
-      useFirebase = true;
-    } catch(e) {
-      console.warn("Firebase no disponible, usando localStorage.", e);
-    }
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  auth = firebase.auth();
+  useFirebase = true;
+} catch(e) {
+  console.warn("Firebase no disponible, usando localStorage.", e);
+}
 
     /* ============================================================
        SYNC UI
@@ -563,19 +740,46 @@
         .then(() => { showSync("Eliminado"); renderIncidentList(); })
         .catch(err => console.error(err));
     }
+function startRealtimeListener() {
+  if (!useFirebase || dbListenerStarted) return;
 
-    /* Realtime listener */
-    if (useFirebase) {
-      db.ref(FB_PATH).on("value", snap => {
-        const data = snap.val() || {};
-        _localCache = Object.keys(data).map(k => ({ ...data[k], key: k }));
-        renderIncidentList();
-      }, err => {
-        console.error("Firebase read error:", err);
-        showSync("Error de conexión", true);
-      });
+  dbListenerStarted = true;
+
+  db.ref(FB_PATH).on("value", snap => {
+    const data = snap.val() || {};
+    _localCache = Object.keys(data).map(k => ({ ...data[k], key: k }));
+    renderIncidentList();
+  }, err => {
+    console.error("Firebase read error:", err);
+    showSync("Error de conexión", true);
+  });
+}
+function ensureFirebaseReady() {
+  if (useFirebase && !authReady) {
+    showSync("Esperando autenticación...", true);
+    return false;
+  }
+  return true;
+}
+function initAnonymousAuth() {
+  if (!useFirebase || !auth) return;
+
+  auth.onAuthStateChanged(async user => {
+    if (user) {
+      authReady = true;
+      startRealtimeListener();
+      showSync("Conectado con Firebase ☁️");
+      return;
     }
 
+    try {
+      await auth.signInAnonymously();
+    } catch (err) {
+      console.error("Error en autenticación anónima:", err);
+      showSync("Error de autenticación", true);
+    }
+  });
+}
     /* ============================================================
        DEFAULTS
     ============================================================ */
@@ -584,9 +788,8 @@
     let autoSaveTimer = null;
 
     const DEF = {
-      key:"", title:"ACTUALIZACI\u00d3N INCIDENTE MAYOR", incidentId:"",
-      community:"UFA +3", sinceDate:"", sinceTime:"",
-      incidentType:"apertura", reportTime:"", updateNumber:"Update #1",
+      key:"", title:"ACTUALIZACI\u00d3N INCIDENTE MAYOR", incidentId:"INC000000000",
+      incidentType:"apertura", reportTime:"",
       apertura_fechaEvento:"", apertura_impactoPreliminar:"", apertura_horaInicio:"", apertura_servicio:"[Nombre del servicio]",
       avance_servicio:"[Nombre del servicio]", avance_descripcion:"", avance_causaProbable:"",
       avance_proximosPasos:[], avance_lider:"[Nombre]", avance_timeline:[],
@@ -610,11 +813,106 @@
     /* ============================================================
        TYPE TABS
     ============================================================ */
-    function setIncidentType(type) {
-      document.querySelectorAll(".type-tab").forEach(t => t.classList.toggle("active", t.dataset.type === type));
-      document.querySelectorAll(".type-section").forEach(s => s.classList.toggle("active", s.id === "section" + type[0].toUpperCase() + type.slice(1)));
-      scheduleAutoSave();
+ const STEP_ORDER = ["apertura", "avance", "cierre"];
+const TITLE_BY_TYPE = {
+  apertura: "APERTURA INCIDENTE MAYOR",
+  avance: "ACTUALIZACIÓN INCIDENTE MAYOR",
+  cierre: "CIERRE INCIDENTE MAYOR"
+};
+
+function getTitleByType(type) {
+  return TITLE_BY_TYPE[type] || "APERTURA INCIDENTE MAYOR";
+}
+function hasAvanceContent() {
+  return currentTimelineEntries.some(e =>
+    (e.time || "").trim() || (e.content || "").trim()
+  );
+}
+
+function hasCierreContent() {
+  const horaFinalInput = document.querySelector('[data-field="cierre_horaFinal"]');
+  const solucionAplicadaEl = document.querySelector('[data-field="cierre_solucionAplicada"]');
+
+  const horaFinal = horaFinalInput ? (horaFinalInput.value || "").trim() : "";
+  const solucionAplicada = solucionAplicadaEl ? plain(solucionAplicadaEl.innerHTML || "") : "";
+
+  return !!horaFinal && !!solucionAplicada;
+}
+
+function refreshStepperState() {
+  const activeStep = document.querySelector(".stepper .step.active");
+  const selectedType = activeStep ? activeStep.dataset.type : "apertura";
+  updateStepperUI(selectedType);
+}
+function syncTitleWithType(type) {
+  const titleEl = document.querySelector('[data-field="title"]');
+  if (titleEl) titleEl.textContent = getTitleByType(type);
+}
+function syncSharedServiceChip(data = null) {
+  const chip = document.getElementById("sharedServicioChip");
+  if (!chip) return;
+
+  const value = plain(
+    (data && (data.avance_servicio || data.apertura_servicio)) ||
+    chip.innerHTML ||
+    "[Nombre del servicio]"
+  ) || "[Nombre del servicio]";
+
+  chip.textContent = value;
+}
+function updateStepperUI(type) {
+  let completedIndex = 0;
+
+  // Si hay avances registrados, se completa hasta Avance
+  if (hasAvanceContent()) {
+    completedIndex = Math.max(completedIndex, 1);
+  }
+
+  // Solo completar hasta Cierre si ambos campos obligatorios tienen datos
+  if (hasCierreContent()) {
+    completedIndex = Math.max(completedIndex, 2);
+  }
+
+  const progress = document.getElementById("stepperProgress");
+
+  document.querySelectorAll(".stepper .step").forEach(step => {
+    const stepType = step.dataset.type;
+    const stepIndex = STEP_ORDER.indexOf(stepType);
+    const circle = step.querySelector(".step-circle");
+
+    const isActive = stepType === type;
+    const isDone = stepIndex < completedIndex || (stepIndex === completedIndex && !isActive);
+
+    step.classList.toggle("active", isActive);
+    step.classList.toggle("done", isDone);
+
+    if (circle) {
+      circle.classList.toggle("active", isActive);
+      circle.classList.toggle("done", isDone);
     }
+  });
+
+  if (progress) {
+    let width = "0%";
+    if (completedIndex === 1) width = "50%";
+    if (completedIndex === 2) width = "100%";
+    progress.style.width = width;
+  }
+}
+
+function setIncidentType(type) {
+  updateStepperUI(type);
+  syncTitleWithType(type);
+
+  document.querySelectorAll(".type-section").forEach(section => {
+    section.classList.toggle(
+      "active",
+      section.id === "section" + type.charAt(0).toUpperCase() + type.slice(1)
+    );
+  });
+
+  scheduleAutoSave();
+}
 
     /* ============================================================
        LIST ITEMS
@@ -635,32 +933,133 @@
       const d = _mkItem(ph); c.appendChild(d); d.querySelector("textarea").focus(); scheduleAutoSave();
     }
 
-    /* ============================================================
-       TIMELINE
-    ============================================================ */
-    function renderTimeline(entries) {
-      const list = document.getElementById("timelineList"); if (!list) return;
-      list.innerHTML = "";
-      if (!entries || !entries.length) {
-        list.innerHTML = '<div class="timeline-empty">Sin avances. Haz clic en &ldquo;+ Agregar avance&rdquo; para empezar.</div>'; return;
-      }
-      entries.forEach(e => list.appendChild(_mkTLEntry(e.time||"", e.content||"")));
-    }
-    function _mkTLEntry(time, content) {
-      const d = document.createElement("div"); d.className = "timeline-entry";
-      d.innerHTML = `
-        <div class="timeline-time"><input type="text" value="${esc(time)}" placeholder="dd/mm/aaaa hh:mm"></div>
-        <div class="timeline-content"><textarea placeholder="Describe el avance...">${esc(content)}</textarea></div>
-        <button class="timeline-remove" type="button" onclick="this.closest('.timeline-entry').remove();scheduleAutoSave();">&times;</button>`;
-      d.querySelectorAll("input,textarea").forEach(n => n.addEventListener("input", scheduleAutoSave));
-      return d;
-    }
-    function addTimelineEntry() {
-      const list = document.getElementById("timelineList"); if (!list) return;
-      const empty = list.querySelector(".timeline-empty"); if (empty) empty.remove();
-      const now = new Date().toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"});
-      const e = _mkTLEntry(now,""); list.appendChild(e); e.querySelector("textarea").focus(); scheduleAutoSave();
-    }
+/* ============================================================
+   TIMELINE
+============================================================ */
+let currentTimelineEntries = [];
+let showAllTimelineEntries = false;
+
+function renderTimeline(entries) {
+  currentTimelineEntries = (entries || []).map(e => ({
+    time: e?.time || "",
+    content: e?.content || ""
+  }));
+  showAllTimelineEntries = false;
+  renderTimelineUI();
+  refreshStepperState();
+}
+
+function renderTimelineUI(focusLast = false) {
+  const list = document.getElementById("timelineList");
+  const toggleBtn = document.getElementById("toggleTimelineBtn");
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  if (!currentTimelineEntries.length) {
+    if (toggleBtn) toggleBtn.hidden = true;
+    list.innerHTML = '<div class="timeline-empty">Sin avances. Haz clic en “+ Agregar avance” para empezar.</div>';
+    return;
+  }
+
+  if (toggleBtn) {
+    toggleBtn.hidden = currentTimelineEntries.length <= 1;
+    toggleBtn.textContent = showAllTimelineEntries
+      ? "Ocultar avances anteriores"
+      : `Ver todos los avances (${currentTimelineEntries.length})`;
+  }
+
+  const visibleIndexes = showAllTimelineEntries
+    ? currentTimelineEntries.map((_, index) => index)
+    : [currentTimelineEntries.length - 1];
+
+  visibleIndexes.forEach(index => {
+    const entry = currentTimelineEntries[index];
+    list.appendChild(_mkTLEntry(entry.time || "", entry.content || "", index));
+  });
+
+  if (focusLast) {
+    const lastTextarea = list.querySelector(".timeline-entry:last-child textarea");
+    if (lastTextarea) lastTextarea.focus();
+  }
+}
+
+function _mkTLEntry(time, content, index) {
+  const d = document.createElement("div");
+  d.className = "timeline-entry";
+  d.dataset.index = index;
+
+  d.innerHTML = `
+    <div class="timeline-time">
+      <input type="text" value="${esc(time)}" placeholder="dd/mm/aaaa hh:mm">
+    </div>
+    <div class="timeline-content">
+      <textarea placeholder="Describe el avance...">${esc(content)}</textarea>
+    </div>
+    <button class="timeline-remove" type="button">&times;</button>
+  `;
+
+  const timeInput = d.querySelector(".timeline-time input");
+  const contentInput = d.querySelector(".timeline-content textarea");
+  const removeBtn = d.querySelector(".timeline-remove");
+
+timeInput.addEventListener("input", e => {
+  if (!currentTimelineEntries[index]) return;
+  currentTimelineEntries[index].time = e.target.value;
+  refreshStepperState();
+  scheduleAutoSave();
+});
+
+contentInput.addEventListener("input", e => {
+  if (!currentTimelineEntries[index]) return;
+  currentTimelineEntries[index].content = e.target.value;
+  refreshStepperState();
+  scheduleAutoSave();
+});
+
+  removeBtn.addEventListener("click", () => {
+    removeTimelineEntry(index);
+  });
+
+  return d;
+}
+
+function toggleTimelineEntries() {
+  showAllTimelineEntries = !showAllTimelineEntries;
+  renderTimelineUI();
+}
+
+function addTimelineEntry() {
+  const now = new Date().toLocaleString("es-CO", {
+    dateStyle: "short",
+    timeStyle: "short"
+  });
+
+  currentTimelineEntries.push({
+    time: now,
+    content: ""
+  });
+
+showAllTimelineEntries = false;
+renderTimelineUI(true);
+refreshStepperState();
+scheduleAutoSave();
+}
+
+function removeTimelineEntry(index) {
+  const ok = confirm("¿Seguro que deseas eliminar este avance?");
+  if (!ok) return;
+
+  currentTimelineEntries.splice(index, 1);
+
+  if (currentTimelineEntries.length <= 1) {
+    showAllTimelineEntries = false;
+  }
+
+  renderTimelineUI();
+  refreshStepperState();
+  scheduleAutoSave();
+}
 
     /* ============================================================
        READ / WRITE
@@ -672,63 +1071,151 @@
         if (n.tagName === "INPUT") data[k] = n.value;
         else data[k] = n.innerHTML.trim();
       });
-      const at = document.querySelector(".type-tab.active");
-      data.incidentType = at ? at.dataset.type : "apertura";
+const at = document.querySelector(".stepper .step.active");
+data.incidentType = at ? at.dataset.type : "apertura";
+data.title = getTitleByType(data.incidentType);
+
+if (!plain(data.incidentId)) {
+  data.incidentId = "INC0000000000";
+}
+const sharedServicioChip = document.getElementById("sharedServicioChip");
+const sharedServicio = sharedServicioChip ? plain(sharedServicioChip.innerHTML) : "";
+
+if (sharedServicio) {
+  data.apertura_servicio = sharedServicio;
+  data.avance_servicio = sharedServicio;
+}
       data.avance_proximosPasos = Array.from(document.querySelectorAll("#proximosPasosContainer .list-item-text")).map(n=>n.value.trim()).filter(Boolean);
       data.cierre_compromisos = Array.from(document.querySelectorAll("#compromisosContainer .list-item-text")).map(n=>n.value.trim()).filter(Boolean);
-      data.avance_timeline = Array.from(document.querySelectorAll("#timelineList .timeline-entry")).map(e=>({
-        time: e.querySelector(".timeline-time input")?.value?.trim()||"",
-        content: e.querySelector(".timeline-content textarea")?.value?.trim()||""
-      })).filter(e=>e.time||e.content);
+      data.avance_timeline = currentTimelineEntries
+  .map(e => ({
+    time: (e.time || "").trim(),
+    content: (e.content || "").trim()
+  }))
+  .filter(e => e.time || e.content);
       data.updatedAt = new Date().toISOString();
       return data;
     }
 
-    function writeCurrent(data) {
-      card.querySelectorAll("[data-field]").forEach(n => {
-        const k = n.dataset.field;
-        if (n.tagName === "INPUT") n.value = data[k] || "";
-        else n.innerHTML = data[k] || "";
-      });
-      setIncidentType(data.incidentType || "apertura");
-      renderListItems("proximosPasosContainer", data.avance_proximosPasos||[], "Describe el pr\u00f3ximo paso...");
-      renderListItems("compromisosContainer", data.cierre_compromisos||[], "Describe el compromiso...");
-      renderTimeline(data.avance_timeline||[]);
-      renderLogo();
-    }
+function writeCurrent(data) {
+  if (!data.incidentType) data.incidentType = "apertura";
+  if (!data.incidentId) data.incidentId = "INC0000000000";
+  data.title = getTitleByType(data.incidentType);
+
+  card.querySelectorAll("[data-field]").forEach(n => {
+    const k = n.dataset.field;
+    if (n.tagName === "INPUT") n.value = data[k] || "";
+    else n.innerHTML = data[k] || "";
+  });
+  syncSharedServiceChip(data);
+  setIncidentType(data.incidentType);
+  renderListItems("proximosPasosContainer", data.avance_proximosPasos || [], "Describe el próximo paso...");
+  renderListItems("compromisosContainer", data.cierre_compromisos || [], "Describe el compromiso...");
+  renderTimeline(data.avance_timeline || []);
+  renderLogo();
+}
+
 
     /* ============================================================
        CRUD
     ============================================================ */
-    function createIncident() {
-      const now = new Date();
-      const id = `#INC-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}${String(now.getDate()).padStart(2,"0")}-${String(now.getHours()).padStart(2,"0")}${String(now.getMinutes()).padStart(2,"0")}`;
-      const item = { ...DEF, key: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-        incidentId: id, sinceDate: now.toISOString().slice(0,10), sinceTime: now.toTimeString().slice(0,5),
-        reportTime: now.toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"}), updatedAt: now.toISOString() };
-      _localCache.push(item);
-      saveOne(item);
-      openIncident(item.key);
-    }
+function createIncident() {
+  if (!ensureFirebaseReady()) return;
+
+  const now = new Date();
+
+  const item = {
+    ...DEF,
+    key: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+    title: getTitleByType("apertura"),
+    incidentId: "INC0000000000",
+    sinceDate: now.toISOString().slice(0,10),
+    sinceTime: now.toTimeString().slice(0,5),
+    reportTime: now.toLocaleString("es-CO", { dateStyle:"short", timeStyle:"short" }),
+    updatedAt: now.toISOString()
+  };
+
+  _localCache.push(item);
+  saveOne(item);
+  openIncident(item.key);
+}
 
     function openIncident(key) {
       const item = getAll().find(i => i.key === key); if (!item) return;
       currentKey = key; writeCurrent(item); document.body.classList.add("editor-open");
     }
 
+    function downloadIncidentImage(key) {
+  const prevKey = currentKey;
+  const wasEditorOpen = document.body.classList.contains("editor-open");
+  const item = getAll().find(i => i.key === key);
+  if (!item) return;
+
+  currentKey = key;
+  writeCurrent(item);
+  document.body.classList.add("editor-open");
+
+  saveCurrentIncident({ silent: true });
+
+  html2canvas(card, {
+    scale: 2,
+    backgroundColor: "#ffffff",
+    logging: false,
+    allowTaint: true,
+    useCORS: true
+  }).then(canvas => {
+    const a = document.createElement("a");
+    a.href = canvas.toDataURL("image/png");
+    a.download = `${plain(item.incidentId).replace(/[^a-z0-9-]+/gi, "-") || "incidente-mayor"}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    currentKey = prevKey;
+    if (prevKey) {
+      const prevItem = getAll().find(i => i.key === prevKey);
+      if (prevItem) writeCurrent(prevItem);
+    } else if (!wasEditorOpen) {
+      document.body.classList.remove("editor-open");
+    }
+  }).catch(() => {
+    alert("Error al generar imagen.");
+    currentKey = prevKey;
+    if (prevKey) {
+      const prevItem = getAll().find(i => i.key === prevKey);
+      if (prevItem) writeCurrent(prevItem);
+    } else if (!wasEditorOpen) {
+      document.body.classList.remove("editor-open");
+    }
+  });
+}
+
     function saveCurrentIncident({silent=false}={}) {
+      if (!ensureFirebaseReady()) return;
       if (!currentKey) return;
       const item = readCurrent();
       saveOne(item);
       renderIncidentList();
       if (!silent) alert("Cambios guardados.");
     }
+    function updateLastUpdateField() {
+  const reportTimeEl = document.querySelector('[data-field="reportTime"]');
+  if (!reportTimeEl) return;
 
-    function scheduleAutoSave() {
-      if (!currentKey) return;
-      clearTimeout(autoSaveTimer);
-      autoSaveTimer = setTimeout(() => saveCurrentIncident({silent:true}), 800);
-    }
+  reportTimeEl.textContent = new Date().toLocaleString("es-CO", {
+    dateStyle: "short",
+    timeStyle: "short"
+  });
+}
+
+  function scheduleAutoSave() {
+  if (!currentKey) return;
+
+  updateLastUpdateField();
+
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => saveCurrentIncident({ silent: true }), 800);
+}
 
     function goHome() {
       saveCurrentIncident({silent:true}); currentKey = null;
@@ -736,6 +1223,7 @@
     }
 
     function deleteCurrentIncident() {
+      if (!ensureFirebaseReady()) return;
       if (!currentKey) return;
       const cur = readCurrent();
       if (!confirm(`Eliminar ${plain(cur.incidentId)||"este incidente"}?`)) return;
@@ -743,28 +1231,11 @@
       document.body.classList.remove("editor-open");
     }
 
-    function downloadIncident(key) {
-      const prev = currentKey; currentKey = key;
-      const item = getAll().find(i => i.key === key); if (item) writeCurrent(item);
-      downloadCurrentIncident(); currentKey = prev;
-    }
-
     function deleteIncident(key) {
+      if (!ensureFirebaseReady()) return;
       const item = getAll().find(i => i.key === key);
       if (!confirm(`Eliminar ${plain(item?.incidentId)||"este incidente"}?`)) return;
       deleteOne(key);
-    }
-
-    function downloadCurrentIncident() {
-      if (!currentKey) return;
-      saveCurrentIncident({silent:true});
-      const css = document.querySelector("style").textContent;
-      const html = `<!doctype html>\n<html lang="es">\n<head>\n<meta charset="utf-8">\n<title>${plain(readCurrent().incidentId)} - Incidente mayor</title>\n<style>${css}</style>\n</head>\n<body class="editor-open">\n<main class="wrap">${card.outerHTML}</main>\n</body>\n</html>`;
-      const blob = new Blob([html],{type:"text/html;charset=utf-8"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = `${plain(readCurrent().incidentId).replace(/[^a-z0-9-]+/gi,"-")||"incidente-mayor"}.html`;
-      a.click(); URL.revokeObjectURL(url);
     }
 
     function downloadAsImage() {
@@ -781,36 +1252,59 @@
     /* ============================================================
        LIST
     ============================================================ */
-    function renderIncidentList() {
-      const list = document.getElementById("incidentList");
-      const counter = document.getElementById("incidentCounter");
-      const q = document.getElementById("incidentSearch").value.trim().toLowerCase();
-      const all = getAll();
-      const filtered = all.filter(i => [i.incidentId,i.avance_servicio,i.apertura_servicio,i.avance_lider].join(" ").toLowerCase().includes(q));
-      counter.textContent = `${all.length} incidente${all.length===1?"":"s"} guardado${all.length===1?"":"s"} (Firebase)`;
-      list.innerHTML = "";
-      if (!filtered.length) { list.innerHTML = '<div class="empty-state">No hay incidentes. Haz clic en &ldquo;+ Nuevo incidente mayor&rdquo; para crear uno.</div>'; return; }
-      const typeLabels = {apertura:"Apertura",avance:"Avance",cierre:"Cierre"};
-      const typeCls    = {apertura:"type-badge-apertura",avance:"type-badge-avance",cierre:"type-badge-cierre"};
-      filtered.sort((a,b)=>new Date(b.updatedAt)-new Date(a.updatedAt)).forEach(item => {
-        const t = item.incidentType||"apertura";
-        const service = plain(item.avance_servicio||item.apertura_servicio||"Servicio sin definir");
-        const leader  = plain(item.avance_lider||"Sin l\u00edder");
-        const row = document.createElement("div"); row.className = "incident-item";
-        row.innerHTML = `
-          <button class="incident-main" type="button" onclick="openIncident('${item.key}')">
-            <strong>${esc(plain(item.incidentId)||"Sin INC")} &mdash; ${esc(service)}</strong>
-            <span class="incident-summary">${esc(leader)} &middot; ${esc(fmt(item.updatedAt))}</span>
-          </button>
-          <span class="incident-actions">
-            <span class="${typeCls[t]||'type-badge-apertura'}">${esc(typeLabels[t]||t)}</span>
-            <button class="row-action" type="button" onclick="openIncident('${item.key}')">Editar</button>
-            <button class="row-action" type="button" onclick="downloadIncident('${item.key}')">Descargar</button>
-            <button class="row-action danger" type="button" onclick="deleteIncident('${item.key}')">Eliminar</button>
-          </span>`;
-        list.appendChild(row);
-      });
-    }
+function renderIncidentList() {
+  const list = document.getElementById("incidentList");
+  const counter = document.getElementById("incidentCounter");
+  const q = document.getElementById("incidentSearch").value.trim().toLowerCase();
+  const all = getAll();
+
+  const filtered = all.filter(i =>
+    [i.incidentId, i.avance_servicio, i.apertura_servicio, i.avance_lider]
+      .join(" ")
+      .toLowerCase()
+      .includes(q)
+  );
+
+  counter.textContent = `${all.length} incidente${all.length===1?"":"s"} guardado${all.length===1?"":"s"} (Firebase)`;
+  list.innerHTML = "";
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty-state">No hay incidentes. Haz clic en “+ Nuevo incidente mayor” para crear uno.</div>';
+    return;
+  }
+
+  const typeLabels = { apertura: "Apertura", avance: "Avance", cierre: "Cierre" };
+  const typeCls = {
+    apertura: "type-badge-apertura",
+    avance: "type-badge-avance",
+    cierre: "type-badge-cierre"
+  };
+
+  filtered
+    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+    .forEach(item => {
+      const t = item.incidentType || "apertura";
+      const service = plain(item.avance_servicio || item.apertura_servicio || "Servicio sin definir");
+      const leader = plain(item.avance_lider || "Sin líder");
+
+      const row = document.createElement("div");
+      row.className = "incident-item";
+
+      row.innerHTML = `
+        <button class="incident-main" type="button" onclick="openIncident('${item.key}')">
+          <strong>${esc(plain(item.incidentId) || "Sin INC")} &mdash; ${esc(service)}</strong>
+          <span class="incident-summary">${esc(leader)} &middot; ${esc(fmt(item.updatedAt))}</span>
+        </button>
+        <span class="incident-actions">
+          <span class="${typeCls[t] || 'type-badge-apertura'}">${esc(typeLabels[t] || t)}</span>
+          <button class="row-action" type="button" onclick="openIncident('${item.key}')">Editar</button>
+          <button class="row-action" type="button" onclick="downloadIncidentImage('${item.key}')">Descargar .png</button>
+          <button class="row-action danger" type="button" onclick="deleteIncident('${item.key}')">Eliminar</button>
+        </span>`;
+
+      list.appendChild(row);
+    });
+}
 
     /* ============================================================
        UTILS
@@ -822,10 +1316,25 @@
     /* ============================================================
        INIT
     ============================================================ */
-    card.addEventListener("input", scheduleAutoSave);
-    card.addEventListener("change", scheduleAutoSave);
-    renderLogo();
-    if (!useFirebase) renderIncidentList();
+card.addEventListener("input", () => {
+  refreshStepperState();
+  scheduleAutoSave();
+});
+
+card.addEventListener("change", () => {
+  refreshStepperState();
+  scheduleAutoSave();
+});
+
+document.getElementById("sharedServicioChip")?.addEventListener("input", () => {
+  refreshStepperState();
+  scheduleAutoSave();
+});
+
+renderLogo();
+initAnonymousAuth();
+
+if (!useFirebase) renderIncidentList();
   </script>
 </body>
 </html>
