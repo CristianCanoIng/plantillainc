@@ -1062,10 +1062,14 @@
     return;
   }
 
-  toggleBtn.hidden = currentProximosPasos.length <= 1;
-  toggleBtn.textContent = showAllProximosPasos
-    ? "Ocultar pasos anteriores"
-    : `Ver todos los pasos (${currentProximosPasos.length})`;
+const pasosValidos = currentProximosPasos
+  .map(p => (p || "").trim())
+  .filter(Boolean);
+
+toggleBtn.hidden = pasosValidos.length <= 1;
+toggleBtn.textContent = showAllProximosPasos
+  ? "Ocultar pasos anteriores"
+  : `Ver todos los pasos (${pasosValidos.length})`;
 
   const visibleIndexes = showAllProximosPasos
     ? currentProximosPasos.map((_, i) => i)
@@ -1089,9 +1093,9 @@ function _mkPasoItem(text, index) {
 
   d.innerHTML = `
     <div class="list-item-content">
-      <textarea class="list-item-text">${esc(text)}</textarea>
+      <textarea class="list-item-text" placeholder="Describe el próximo paso...">${esc(text)}</textarea>
     </div>
-    <button class="list-item-remove">&times;</button>
+    <button class="list-item-remove" type="button" title="Eliminar paso">&times;</button>
   `;
 
   const textarea = d.querySelector("textarea");
@@ -1099,6 +1103,7 @@ function _mkPasoItem(text, index) {
 
   textarea.addEventListener("input", e => {
     currentProximosPasos[index] = e.target.value;
+    verificarProximosPasos();
     scheduleAutoSave();
   });
 
@@ -1124,11 +1129,46 @@ function _mkPasoItem(text, index) {
     let currentProximosPasos = [];
     let showAllProximosPasos = false;
 
-    function addProximoPaso() {
+function addProximoPaso() {
   currentProximosPasos.push("");
   showAllProximosPasos = false;
   renderProximosPasosUI(true);
+  verificarProximosPasos();
   scheduleAutoSave();
+}
+function removeProximoPaso(index) {
+  const paso = currentProximosPasos[index] || "";
+
+  if (paso.trim()) {
+    const ok = confirm("¿Seguro que deseas eliminar este próximo paso?");
+    if (!ok) return;
+  }
+
+  currentProximosPasos.splice(index, 1);
+
+  if (currentProximosPasos.length <= 1) {
+    showAllProximosPasos = false;
+  }
+
+  renderProximosPasosUI();
+  scheduleAutoSave();
+}
+
+function verificarProximosPasos() {
+  const pasosValidos = currentProximosPasos
+    .map(p => (p || "").trim())
+    .filter(Boolean);
+
+  const toggleBtn = document.getElementById("togglePasosBtn");
+
+  if (toggleBtn) {
+    toggleBtn.hidden = pasosValidos.length <= 1;
+    toggleBtn.textContent = showAllProximosPasos
+      ? "Ocultar pasos anteriores"
+      : `Ver todos los pasos (${pasosValidos.length})`;
+  }
+
+  return pasosValidos.length;
 }
     function renderTimeline(entries) {
       currentTimelineEntries = (entries || []).map(e => ({ time: e?.time || "", content: e?.content || "" }));
@@ -1187,7 +1227,9 @@ function _mkPasoItem(text, index) {
       const sharedServicioChip = document.getElementById("sharedServicioChip");
       const sharedServicio = sharedServicioChip ? plain(sharedServicioChip.innerHTML) : "";
       if (sharedServicio) { data.apertura_servicio = sharedServicio; data.avance_servicio = sharedServicio; }
-      data.avance_proximosPasos = Array.from(document.querySelectorAll("#proximosPasosContainer .list-item-text")).map(n=>n.value.trim()).filter(Boolean);
+      data.avance_proximosPasos = currentProximosPasos
+  .map(p => (p || "").trim())
+  .filter(Boolean);
       data.cierre_compromisos = Array.from(document.querySelectorAll("#compromisosContainer .list-item-text")).map(n=>n.value.trim()).filter(Boolean);
       data.avance_timeline = currentTimelineEntries.map(e => ({ time: (e.time||"").trim(), content: (e.content||"").trim() })).filter(e => e.time || e.content);
       data.updatedAt = new Date().toISOString();
@@ -1200,7 +1242,7 @@ function _mkPasoItem(text, index) {
       data.title = getTitleByType(data.incidentType);
       card.querySelectorAll("[data-field]").forEach(n => { const k = n.dataset.field; if (n.tagName === "INPUT") n.value = data[k] || ""; else n.innerHTML = data[k] || ""; });
       syncSharedServiceChip(data); setIncidentType(data.incidentType);
-      renderListItems("proximosPasosContainer", data.avance_proximosPasos || [], "Describe el próximo paso...");
+      renderProximosPasos(data.avance_proximosPasos || []);
       renderListItems("compromisosContainer", data.cierre_compromisos || [], "Describe el compromiso...");
       renderTimeline(data.avance_timeline || []); renderLogos(data.incidentType);
     }
