@@ -567,6 +567,68 @@
       .meta-grid { grid-template-columns: 1fr; }
     }
 
+    /* ===== MODO EXPORTACIÓN DE IMAGEN ===== */
+body.exporting-image .incident-card {
+  background: #ffffff !important;
+  color: #111827 !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+body.exporting-image .row,
+body.exporting-image .type-section,
+body.exporting-image .shared-fields,
+body.exporting-image .timeline-wrap,
+body.exporting-image .timeline-list,
+body.exporting-image .list-items-container {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+body.exporting-image .timeline-entry,
+body.exporting-image .paso-entry,
+body.exporting-image .list-item,
+body.exporting-image .textbox,
+body.exporting-image .pill,
+body.exporting-image .editable-chip {
+  background: #F9FAFB !important;
+  color: #111827 !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+body.exporting-image .label,
+body.exporting-image .timeline-content,
+body.exporting-image .timeline-time,
+body.exporting-image .list-item-text,
+body.exporting-image textarea,
+body.exporting-image input,
+body.exporting-image [contenteditable="true"] {
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+body.exporting-image .timeline-time input {
+  color: var(--brand-dark) !important;
+  -webkit-text-fill-color: var(--brand-dark) !important;
+}
+
+body.exporting-image .export-textarea-value {
+  width: 100%;
+  min-height: 36px;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: transparent !important;
+  opacity: 1 !important;
+}
+
     @media print {
       body { background: #fff; }
       .topbar, .sync-bar, .sync-badge, .home-page { display: none !important; }
@@ -1294,22 +1356,87 @@ function verificarProximosPasos() {
       if (bc) bc.textContent = plain(item.incidentId) || "Editando incidente";
     }
 
-    function downloadIncidentImage(key) {
-      const prevKey = currentKey;
-      const wasEditorOpen = document.body.classList.contains("editor-open");
-      const item = getAll().find(i => i.key === key); if (!item) return;
-      currentKey = key; writeCurrent(item); document.body.classList.add("editor-open");
-      saveCurrentIncident({ silent: true });
-      html2canvas(card, { scale: 2, backgroundColor: "#ffffff", logging: false, allowTaint: true, useCORS: true }).then(canvas => {
-        const a = document.createElement("a"); a.href = canvas.toDataURL("image/png");
-        a.download = `${plain(item.incidentId).replace(/[^a-z0-9-]+/gi, "-") || "incidente-mayor"}.png`;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        copyManagerLink(key); showSync("Imagen descargada + link copiado ✅");
-        currentKey = prevKey;
-        if (prevKey) { const prevItem = getAll().find(i => i.key === prevKey); if (prevItem) writeCurrent(prevItem); }
-        else if (!wasEditorOpen) { document.body.classList.remove("editor-open"); }
-      }).catch(() => { alert("Error al generar imagen."); });
+async function downloadIncidentImage(key) {
+  const prevKey = currentKey;
+  const wasEditorOpen = document.body.classList.contains("editor-open");
+  const item = getAll().find(i => i.key === key);
+
+  if (!item) return;
+
+  currentKey = key;
+  writeCurrent(item);
+  document.body.classList.add("editor-open");
+
+  saveCurrentIncident({ silent: true });
+
+  try {
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
     }
+
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const canvas = await html2canvas(card, {
+      scale: 3,
+      backgroundColor: "#ffffff",
+      logging: false,
+      allowTaint: true,
+      useCORS: true,
+      scrollX: 0,
+      scrollY: 0,
+
+      onclone: function(clonedDoc) {
+        clonedDoc.body.classList.add("exporting-image");
+
+        const clonedCard = clonedDoc.querySelector(".incident-card");
+        if (!clonedCard) return;
+
+        clonedCard.querySelectorAll("textarea").forEach(ta => {
+          const div = clonedDoc.createElement("div");
+          div.className = "export-textarea-value";
+          div.textContent = ta.value || ta.textContent || "";
+          ta.parentNode.replaceChild(div, ta);
+        });
+
+        clonedCard.querySelectorAll("input").forEach(input => {
+          input.style.color = "#111827";
+          input.style.webkitTextFillColor = "#111827";
+          input.style.opacity = "1";
+          input.style.background = "#F9FAFB";
+        });
+
+        clonedCard.querySelectorAll("*").forEach(el => {
+          el.style.opacity = "1";
+          el.style.filter = "none";
+        });
+      }
+    });
+
+    const a = document.createElement("a");
+    a.href = canvas.toDataURL("image/png");
+    a.download = `${plain(item.incidentId).replace(/[^a-z0-9-]+/gi, "-") || "incidente-mayor"}.png`;
+
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    copyManagerLink(key);
+    showSync("Imagen descargada + link copiado ✅");
+
+  } catch (error) {
+    console.error("Error al generar imagen:", error);
+    alert("Error al generar imagen.");
+  } finally {
+    currentKey = prevKey;
+
+    if (prevKey) {
+      const prevItem = getAll().find(i => i.key === prevKey);
+      if (prevItem) writeCurrent(prevItem);
+    } else if (!wasEditorOpen) {
+      document.body.classList.remove("editor-open");
+    }
+  }
+}
 
     function saveCurrentIncident({silent=false}={}) {
       if (!ensureFirebaseReady()) return;
