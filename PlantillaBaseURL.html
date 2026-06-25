@@ -1326,12 +1326,32 @@ function _mkPasoItem(step, index) {
   showAllProximosPasos = !showAllProximosPasos;
   renderProximosPasosUI();
 }
-    function _mkItem(ph) {
-      const d = document.createElement("div"); d.className = "list-item";
-      d.innerHTML = `<div class="list-item-content"><textarea class="list-item-text" placeholder="${ph}"></textarea></div><button class="list-item-remove" type="button" onclick="this.closest('.list-item').remove();scheduleAutoSave();">&times;</button>`;
-      d.querySelector("textarea").addEventListener("input", scheduleAutoSave);
-      return d;
-    }
+function _mkItem(ph) {
+  const d = document.createElement("div");
+  d.className = "list-item";
+
+  d.innerHTML = `
+    <div class="list-item-content">
+      <textarea class="list-item-text" placeholder="${ph}"></textarea>
+    </div>
+    <button class="list-item-remove" type="button" title="Eliminar compromiso">&times;</button>
+  `;
+
+  const textarea = d.querySelector("textarea");
+  const removeBtn = d.querySelector(".list-item-remove");
+
+  textarea.addEventListener("input", scheduleAutoSave);
+
+  removeBtn.addEventListener("click", () => {
+    const ok = confirm("¿Seguro que deseas eliminar este compromiso?");
+    if (!ok) return;
+
+    d.remove();
+    scheduleAutoSave();
+  });
+
+  return d;
+}
     function addListItem(cid, ph) { const c = document.getElementById(cid); if (!c) return; const d = _mkItem(ph); c.appendChild(d); d.querySelector("textarea").focus(); scheduleAutoSave(); }
 
     let currentTimelineEntries = []; let showAllTimelineEntries = false;
