@@ -1081,15 +1081,75 @@ body.exporting-image .export-textarea-value {
 
     function getTitleByType(type) { return TITLE_BY_TYPE[type] || "APERTURA INCIDENTE MAYOR"; }
 
-    function hasAvanceContent() { return currentTimelineEntries.some(e => (e.time||"").trim() || (e.content||"").trim()); }
+    function hasAvanceContent() {
+  const hayAvanceConTexto = currentTimelineEntries.some(e =>
+    (e.content || "").trim()
+  );
 
-    function hasCierreContent() {
-      const horaFinalInput = document.querySelector('[data-field="cierre_horaFinal"]');
-      const solucionAplicadaEl = document.querySelector('[data-field="cierre_solucionAplicada"]');
-      const horaFinal = horaFinalInput ? (horaFinalInput.value || "").trim() : "";
-      const solucionAplicada = solucionAplicadaEl ? plain(solucionAplicadaEl.innerHTML || "") : "";
-      return !!horaFinal && !!solucionAplicada;
+  const causaEl = document.querySelector('[data-field="avance_causaProbable"]');
+  const causa = causaEl ? plain(causaEl.innerHTML || "") : "";
+
+  const hayProximosPasos = currentProximosPasos.some(p => {
+    if (typeof p === "string") {
+      return p.trim();
     }
+
+    return (p.content || "").trim();
+  });
+
+  return !!hayAvanceConTexto || !!causa || !!hayProximosPasos;
+}
+
+function hasCierreContent() {
+  const horaFinalInput = document.querySelector('[data-field="cierre_horaFinal"]');
+  const solucionAplicadaEl = document.querySelector('[data-field="cierre_solucionAplicada"]');
+
+  const horaFinal = horaFinalInput ? (horaFinalInput.value || "").trim() : "";
+  const solucionAplicada = solucionAplicadaEl ? plain(solucionAplicadaEl.innerHTML || "") : "";
+
+  return !!horaFinal && !!solucionAplicada;
+}
+function getIncidentTypeForSave() {
+  if (hasCierreContent()) {
+    return "cierre";
+  }
+
+  if (hasAvanceContent()) {
+    return "avance";
+  }
+
+  return "apertura";
+}
+
+function getIncidentTypeFromData(data) {
+  const cierreOk =
+    (data.cierre_horaFinal || "").trim() &&
+    plain(data.cierre_solucionAplicada || "");
+
+  if (cierreOk) {
+    return "cierre";
+  }
+
+  const avances = Array.isArray(data.avance_timeline) ? data.avance_timeline : [];
+
+  const hayAvanceConTexto = avances.some(e =>
+    (e.content || "").trim()
+  );
+
+  const pasos = normalizePasos(data.avance_proximosPasos || []);
+
+  const hayPasosConTexto = pasos.some(p =>
+    (p.content || "").trim()
+  );
+
+  const causa = plain(data.avance_causaProbable || "");
+
+  if (hayAvanceConTexto || hayPasosConTexto || causa) {
+    return "avance";
+  }
+
+  return "apertura";
+}
 
     function refreshStepperState() { const activeStep = document.querySelector(".stepper .step.active"); updateStepperUI(activeStep ? activeStep.dataset.type : "apertura"); }
 
@@ -1127,13 +1187,21 @@ body.exporting-image .export-textarea-value {
       navigator.clipboard.writeText(link).then(() => { showSync("Link copiado al portapapeles ✅"); }).catch(() => { prompt("Copia este link:", link); });
     }
 
-    function setIncidentType(type) {
-      updateStepperUI(type); syncTitleWithType(type); renderLogos(type);
-      document.querySelectorAll(".type-section").forEach(section => {
-        section.classList.toggle("active", section.id === "section" + type.charAt(0).toUpperCase() + type.slice(1));
-      });
-      scheduleAutoSave();
-    }
+function setIncidentType(type) {
+  // Solo cambia la vista visual del stepper.
+  // NO guarda el tipo del incidente.
+  updateStepperUI(type);
+  syncTitleWithType(type);
+  renderLogos(type);
+
+  document.querySelectorAll(".type-section").forEach(section => {
+    section.classList.toggle(
+      "active",
+      section.id === "section" + type.charAt(0).toUpperCase() + type.slice(1)
+    );
+  });
+}
+
 
     function renderListItems(cid, items, ph) {
       const c = document.getElementById(cid); if (!c) return;
@@ -1375,37 +1443,89 @@ function verificarProximosPasos() {
     }
 
     function readCurrent() {
-      const data = { ...(getAll().find(i => i.key === currentKey) || DEF) };
-      card.querySelectorAll("[data-field]").forEach(n => { const k = n.dataset.field; if (n.tagName === "INPUT") data[k] = n.value; else data[k] = n.innerHTML.trim(); });
-      const at = document.querySelector(".stepper .step.active");
-      data.incidentType = at ? at.dataset.type : "apertura";
-      data.title = getTitleByType(data.incidentType);
-      if (!plain(data.incidentId)) data.incidentId = "INC0000000000";
-      const sharedServicioChip = document.getElementById("sharedServicioChip");
-      const sharedServicio = sharedServicioChip ? plain(sharedServicioChip.innerHTML) : "";
-      if (sharedServicio) { data.apertura_servicio = sharedServicio; data.avance_servicio = sharedServicio; }
-data.avance_proximosPasos = currentProximosPasos
-  .map(p => ({
-    time: (p.time || "").trim(),
-    content: (p.content || "").trim()
-  }))
-  .filter(p => p.time || p.content);
-      data.cierre_compromisos = Array.from(document.querySelectorAll("#compromisosContainer .list-item-text")).map(n=>n.value.trim()).filter(Boolean);
-      data.avance_timeline = currentTimelineEntries.map(e => ({ time: (e.time||"").trim(), content: (e.content||"").trim() })).filter(e => e.time || e.content);
-      data.updatedAt = new Date().toISOString();
-      return data;
-    }
+  const data = { ...(getAll().find(i => i.key === currentKey) || DEF) };
 
-    function writeCurrent(data) {
-      if (!data.incidentType) data.incidentType = "apertura";
-      if (!data.incidentId) data.incidentId = "INC0000000000";
-      data.title = getTitleByType(data.incidentType);
-      card.querySelectorAll("[data-field]").forEach(n => { const k = n.dataset.field; if (n.tagName === "INPUT") n.value = data[k] || ""; else n.innerHTML = data[k] || ""; });
-      syncSharedServiceChip(data); setIncidentType(data.incidentType);
-      renderProximosPasos(data.avance_proximosPasos || []);
-      renderListItems("compromisosContainer", data.cierre_compromisos || [], "Describe el compromiso...");
-      renderTimeline(data.avance_timeline || []); renderLogos(data.incidentType);
+  card.querySelectorAll("[data-field]").forEach(n => {
+    const k = n.dataset.field;
+
+    if (n.tagName === "INPUT") {
+      data[k] = n.value;
+    } else {
+      data[k] = n.innerHTML.trim();
     }
+  });
+
+  if (!plain(data.incidentId)) {
+    data.incidentId = "INC0000000000";
+  }
+
+  const sharedServicioChip = document.getElementById("sharedServicioChip");
+  const sharedServicio = sharedServicioChip ? plain(sharedServicioChip.innerHTML) : "";
+
+  if (sharedServicio) {
+    data.apertura_servicio = sharedServicio;
+    data.avance_servicio = sharedServicio;
+  }
+
+  data.avance_proximosPasos = currentProximosPasos
+    .map(p => ({
+      time: (p.time || "").trim(),
+      content: (p.content || "").trim()
+    }))
+    .filter(p => p.time || p.content);
+
+  data.cierre_compromisos = Array.from(document.querySelectorAll("#compromisosContainer .list-item-text"))
+    .map(n => n.value.trim())
+    .filter(Boolean);
+
+  data.avance_timeline = currentTimelineEntries
+    .map(e => ({
+      time: (e.time || "").trim(),
+      content: (e.content || "").trim()
+    }))
+    .filter(e => e.time || e.content);
+
+  // Aquí se define el tipo REAL para guardar.
+  // No depende del stepper activo.
+  data.incidentType = getIncidentTypeForSave();
+  data.title = getTitleByType(data.incidentType);
+
+  data.updatedAt = new Date().toISOString();
+
+  return data;
+}
+
+function writeCurrent(data) {
+  // Corrige el tipo real al abrir el incidente,
+  // basado en los datos diligenciados, no en el stepper.
+  data.incidentType = getIncidentTypeFromData(data);
+
+  if (!data.incidentId) {
+    data.incidentId = "INC0000000000";
+  }
+
+  data.title = getTitleByType(data.incidentType);
+
+  card.querySelectorAll("[data-field]").forEach(n => {
+    const k = n.dataset.field;
+
+    if (n.tagName === "INPUT") {
+      n.value = data[k] || "";
+    } else {
+      n.innerHTML = data[k] || "";
+    }
+  });
+
+  syncSharedServiceChip(data);
+
+  // Esto solo activa visualmente la sección correcta al abrir.
+  setIncidentType(data.incidentType);
+
+  renderProximosPasos(data.avance_proximosPasos || []);
+  renderListItems("compromisosContainer", data.cierre_compromisos || [], "Describe el compromiso...");
+  renderTimeline(data.avance_timeline || []);
+  renderLogos(data.incidentType);
+}
 
     function createIncident() {
       if (!ensureFirebaseReady()) return;
