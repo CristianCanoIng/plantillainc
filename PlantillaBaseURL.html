@@ -512,6 +512,39 @@
     .timeline-actions { display: flex; justify-content: flex-start; margin-bottom: 8px; }
     .btn-toggle-timeline { border: 1px solid var(--line); border-radius: var(--radius-sm); background: white; color: var(--ink-2); cursor: pointer; font-weight: 700; padding: 5px 10px; font-size: 11.5px; min-height: 28px; }
     .btn-toggle-timeline:hover { background: var(--line-2); }
+    /* PRÓXIMOS PASOS COMO TIMELINE */
+.pasos-list {
+  margin-top: 8px;
+}
+
+.paso-entry {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.paso-entry::before {
+  background: var(--blue);
+  box-shadow: 0 0 0 2px var(--blue);
+}
+
+.paso-entry textarea {
+  font: inherit;
+  font-size: 12px;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  resize: vertical;
+  min-height: 36px;
+  color: var(--ink-2);
+  padding: 0;
+  outline: none;
+}
+
+.paso-entry textarea:focus {
+  background: rgba(37, 99, 235, 0.04);
+  border-radius: 6px;
+  padding: 4px;
+}
 
     /* LOGO TOP */
     .compensar-top { display: flex; align-items: center; padding: 0; }
@@ -770,7 +803,7 @@
       </button>
     </div>
 
-    <div class="list-items-container" id="proximosPasosContainer"></div>
+    <div class="timeline-list pasos-list" id="proximosPasosContainer"></div>
 
     <button class="btn-add-item" type="button" onclick="addProximoPaso()">
       + Agregar paso
@@ -1088,18 +1121,18 @@ toggleBtn.textContent = showAllProximosPasos
 
 function _mkPasoItem(text, index) {
   const d = document.createElement("div");
-  d.className = "list-item";
+  d.className = "timeline-entry paso-entry";
   d.dataset.index = index;
 
   d.innerHTML = `
-    <div class="list-item-content">
+    <div class="timeline-content">
       <textarea class="list-item-text" placeholder="Describe el próximo paso...">${esc(text)}</textarea>
     </div>
-    <button class="list-item-remove" type="button" title="Eliminar paso">&times;</button>
+    <button class="timeline-remove" type="button" title="Eliminar paso">&times;</button>
   `;
 
   const textarea = d.querySelector("textarea");
-  const removeBtn = d.querySelector(".list-item-remove");
+  const removeBtn = d.querySelector(".timeline-remove");
 
   textarea.addEventListener("input", e => {
     currentProximosPasos[index] = e.target.value;
