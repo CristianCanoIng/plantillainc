@@ -610,33 +610,14 @@
             <div class="textbox" data-field="avance_causaProbable" contenteditable="true" data-placeholder="Describe la causa probable identificada hasta el momento."></div>
           </div>
         </div>
-<div class="row">
-  <div class="icon icon-next" aria-hidden="true"></div>
-  <div style="width:100%">
-    <div class="field-line">
-      <span class="label">Pr&oacute;ximos pasos:</span>
-    </div>
-
-    <div class="timeline-wrap">
-      <div class="timeline-actions">
-        <button
-          id="toggleProximosPasosBtn"
-          class="btn-toggle-timeline"
-          type="button"
-          onclick="toggleProximosPasosEntries()"
-          hidden>
-          Ver todos los próximos pasos
-        </button>
-      </div>
-
-      <div class="timeline-list" id="proximosPasosContainer"></div>
-
-      <button class="btn-add-item" type="button" onclick="addProximoPasoEntry()">
-        + Agregar paso
-      </button>
-    </div>
-  </div>
-</div>
+        <div class="row">
+          <div class="icon icon-next" aria-hidden="true"></div>
+          <div style="width:100%">
+            <div class="field-line"><span class="label">Pr&oacute;ximos pasos:</span></div>
+            <div class="list-items-container" id="proximosPasosContainer"></div>
+            <button class="btn-add-item" type="button" onclick="addListItem('proximosPasosContainer','Describe el pr&oacute;ximo paso...')">+ Agregar paso</button>
+          </div>
+        </div>
         <div class="row">
           <div class="icon icon-leader" aria-hidden="true"></div>
           <div class="field-line">
@@ -1172,113 +1153,7 @@ function removeTimelineEntry(index) {
   refreshStepperState();
   scheduleAutoSave();
 }
-/* ============================================================
-   PRÓXIMOS PASOS - MISMO COMPORTAMIENTO QUE AVANCES
-============================================================ */
-let currentProximosPasosEntries = [];
-let showAllProximosPasosEntries = false;
 
-function renderProximosPasos(entries) {
-  currentProximosPasosEntries = (entries || []).map(v => {
-    if (typeof v === "string") return v;
-    return v?.content || "";
-  }).filter(v => (v || "").trim());
-
-  showAllProximosPasosEntries = false;
-  renderProximosPasosUI();
-}
-
-function renderProximosPasosUI(focusLast = false) {
-  const list = document.getElementById("proximosPasosContainer");
-  const toggleBtn = document.getElementById("toggleProximosPasosBtn");
-  if (!list) return;
-
-  list.innerHTML = "";
-
-  if (!currentProximosPasosEntries.length) {
-    if (toggleBtn) toggleBtn.hidden = true;
-    list.innerHTML = '<div class="timeline-empty">Sin próximos pasos. Haz clic en “+ Agregar paso” para empezar.</div>';
-    return;
-  }
-
-  if (toggleBtn) {
-    toggleBtn.hidden = currentProximosPasosEntries.length <= 1;
-    toggleBtn.textContent = showAllProximosPasosEntries
-      ? "Ocultar próximos pasos anteriores"
-      : `Ver todos los próximos pasos (${currentProximosPasosEntries.length})`;
-  }
-
-  const visibleIndexes = showAllProximosPasosEntries
-    ? currentProximosPasosEntries.map((_, index) => index)
-    : [currentProximosPasosEntries.length - 1];
-
-  visibleIndexes.forEach(index => {
-    list.appendChild(_mkProximoPasoEntry(currentProximosPasosEntries[index], index));
-  });
-
-  if (focusLast) {
-    const lastTextarea = list.querySelector(".timeline-entry:last-child textarea");
-    if (lastTextarea) lastTextarea.focus();
-  }
-}
-
-function _mkProximoPasoEntry(content, index) {
-  const d = document.createElement("div");
-  d.className = "timeline-entry";
-  d.dataset.index = index;
-
-  d.innerHTML = `
-    <div class="timeline-content">
-      <textarea placeholder="Describe el próximo paso...">${esc(content)}</textarea>
-    </div>
-    <button class="timeline-remove" type="button">&times;</button>
-  `;
-
-  const contentInput = d.querySelector(".timeline-content textarea");
-  const removeBtn = d.querySelector(".timeline-remove");
-
-  contentInput.addEventListener("input", e => {
-    if (!currentProximosPasosEntries[index]) return;
-    currentProximosPasosEntries[index] = e.target.value;
-    refreshStepperState();
-    scheduleAutoSave();
-  });
-
-  removeBtn.addEventListener("click", () => {
-    removeProximoPasoEntry(index);
-  });
-
-  return d;
-}
-
-function toggleProximosPasosEntries() {
-  showAllProximosPasosEntries = !showAllProximosPasosEntries;
-  renderProximosPasosUI();
-}
-
-function addProximoPasoEntry() {
-  currentProximosPasosEntries.push("");
-
-  showAllProximosPasosEntries = false;
-  renderProximosPasosUI(true);
-  refreshStepperState();
-  scheduleAutoSave();
-}
-
-function removeProximoPasoEntry(index) {
-  const ok = confirm("¿Seguro que deseas eliminar este próximo paso?");
-  if (!ok) return;
-
-  currentProximosPasosEntries.splice(index, 1);
-
-  if (currentProximosPasosEntries.length <= 1) {
-    showAllProximosPasosEntries = false;
-  }
-
-  renderProximosPasosUI();
-  refreshStepperState();
-  scheduleAutoSave();
-}
     /* ============================================================
        READ / WRITE
     ============================================================ */
@@ -1303,9 +1178,7 @@ if (sharedServicio) {
   data.apertura_servicio = sharedServicio;
   data.avance_servicio = sharedServicio;
 }
-      data.avance_proximosPasos = currentProximosPasosEntries
-  .map(v => (v || "").trim())
-  .filter(Boolean);
+      data.avance_proximosPasos = Array.from(document.querySelectorAll("#proximosPasosContainer .list-item-text")).map(n=>n.value.trim()).filter(Boolean);
       data.cierre_compromisos = Array.from(document.querySelectorAll("#compromisosContainer .list-item-text")).map(n=>n.value.trim()).filter(Boolean);
       data.avance_timeline = currentTimelineEntries
   .map(e => ({
@@ -1327,22 +1200,14 @@ function writeCurrent(data) {
     if (n.tagName === "INPUT") n.value = data[k] || "";
     else n.innerHTML = data[k] || "";
   });
-
   syncSharedServiceChip(data);
   setIncidentType(data.incidentType);
-
-  // Próximos pasos ahora usa el mismo comportamiento tipo Avances:
-  // muestra solo el último y permite ver todos con botón
-  renderProximosPasos(data.avance_proximosPasos || []);
-
-  // Compromisos sigue igual como lista normal
+  renderListItems("proximosPasosContainer", data.avance_proximosPasos || [], "Describe el próximo paso...");
   renderListItems("compromisosContainer", data.cierre_compromisos || [], "Describe el compromiso...");
-
-  // Avances sigue usando su timeline
   renderTimeline(data.avance_timeline || []);
-
   renderLogos(data.incidentType);
 }
+
 
     /* ============================================================
        CRUD
