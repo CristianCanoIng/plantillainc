@@ -683,6 +683,16 @@ body.exporting-image .export-textarea-value {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
         Link
       </button>
+      <button type="button" class="btn editor-action" onclick="downloadIncidentText(currentKey)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <polyline points="14 2 14 8 20 8"/>
+    <line x1="8" y1="13" x2="16" y2="13"/>
+    <line x1="8" y1="17" x2="16" y2="17"/>
+    <line x1="8" y1="9" x2="10" y2="9"/>
+  </svg>
+  Texto
+</button>
       <button type="button" class="btn editor-action" onclick="downloadIncidentImage(currentKey)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Imagen
@@ -774,20 +784,7 @@ body.exporting-image .export-textarea-value {
         </div>
       </header>
 
-      <div class="shared-fields">
-        <div class="row">
-          <div class="icon icon-service" aria-hidden="true"></div>
-          <div class="field-line">
-            <span class="label">Servicio afectado:</span>
-            <span class="editable-chip" id="sharedServicioChip" contenteditable="true">[Nombre del servicio]</span>
-            <span class="pipe">|</span>
-            <span class="label">Última actualización:</span>
-            <span class="pill" data-field="reportTime">18/06/2026 - 14:35</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- STEPPER -->
+            <!-- STEPPER -->
       <div class="type-wrap">
         <div class="type-title">Tipo de comunicación</div>
         <div class="stepper premium" id="typeStepper">
@@ -806,6 +803,21 @@ body.exporting-image .export-textarea-value {
           </button>
         </div>
       </div>
+
+      <div class="shared-fields">
+        <div class="row">
+          <div class="icon icon-service" aria-hidden="true"></div>
+          <div class="field-line">
+            <span class="label">Servicio afectado:</span>
+            <span class="editable-chip" id="sharedServicioChip" contenteditable="true">[Nombre del servicio]</span>
+            <span class="pipe">|</span>
+            <span class="label">Última actualización:</span>
+            <span class="pill" data-field="reportTime">18/06/2026 - 14:35</span>
+          </div>
+        </div>
+      </div>
+
+
 
       <!-- APERTURA -->
       <div class="type-section active" id="sectionApertura">
@@ -1128,11 +1140,25 @@ body.exporting-image .export-textarea-value {
       c.innerHTML = ""; (items||[]).forEach(v => { const d = _mkItem(ph); d.querySelector(".list-item-text").value = v; c.appendChild(d); });
     }
 
-    function renderProximosPasos(items) {
-  currentProximosPasos = items || [];
+function renderProximosPasos(items) {
+  currentProximosPasos = (items || []).map(p => {
+    // Compatibilidad con pasos antiguos guardados como texto
+    if (typeof p === "string") {
+      return {
+        time: "",
+        content: p
+      };
+    }
+
+    return {
+      time: p?.time || "",
+      content: p?.content || ""
+    };
+  });
+
   showAllProximosPasos = false;
   renderProximosPasosUI();
-    }
+}
 
     function renderProximosPasosUI(focusLast = false) {
   const list = document.getElementById("proximosPasosContainer");
@@ -1158,8 +1184,11 @@ body.exporting-image .export-textarea-value {
   }
 
 const pasosValidos = currentProximosPasos
-  .map(p => (p || "").trim())
-  .filter(Boolean);
+  .map(p => ({
+    time: (p.time || "").trim(),
+    content: (p.content || "").trim()
+  }))
+  .filter(p => p.time || p.content);
 
 toggleBtn.hidden = pasosValidos.length <= 1;
 toggleBtn.textContent = showAllProximosPasos
@@ -1181,23 +1210,40 @@ toggleBtn.textContent = showAllProximosPasos
   }
 }
 
-function _mkPasoItem(text, index) {
+function _mkPasoItem(step, index) {
   const d = document.createElement("div");
   d.className = "timeline-entry paso-entry";
   d.dataset.index = index;
 
+  const time = step?.time || "";
+  const content = step?.content || "";
+
   d.innerHTML = `
-    <div class="timeline-content">
-      <textarea class="list-item-text" placeholder="Describe el próximo paso...">${esc(text)}</textarea>
+    <div class="timeline-time">
+      <input type="text" value="${esc(time)}" placeholder="dd/mm/aaaa hh:mm">
     </div>
+
+    <div class="timeline-content">
+      <textarea class="list-item-text" placeholder="Describe el próximo paso...">${esc(content)}</textarea>
+    </div>
+
     <button class="timeline-remove" type="button" title="Eliminar paso">&times;</button>
   `;
 
+  const timeInput = d.querySelector(".timeline-time input");
   const textarea = d.querySelector("textarea");
   const removeBtn = d.querySelector(".timeline-remove");
 
+  timeInput.addEventListener("input", e => {
+    if (!currentProximosPasos[index]) return;
+    currentProximosPasos[index].time = e.target.value;
+    verificarProximosPasos();
+    scheduleAutoSave();
+  });
+
   textarea.addEventListener("input", e => {
-    currentProximosPasos[index] = e.target.value;
+    if (!currentProximosPasos[index]) return;
+    currentProximosPasos[index].content = e.target.value;
     verificarProximosPasos();
     scheduleAutoSave();
   });
@@ -1225,16 +1271,26 @@ function _mkPasoItem(text, index) {
     let showAllProximosPasos = false;
 
 function addProximoPaso() {
-  currentProximosPasos.push("");
+  const now = new Date().toLocaleString("es-CO", {
+    dateStyle: "short",
+    timeStyle: "short"
+  });
+
+  currentProximosPasos.push({
+    time: now,
+    content: ""
+  });
+
   showAllProximosPasos = false;
   renderProximosPasosUI(true);
   verificarProximosPasos();
   scheduleAutoSave();
 }
 function removeProximoPaso(index) {
-  const paso = currentProximosPasos[index] || "";
+  const paso = currentProximosPasos[index] || {};
+  const tieneContenido = (paso.time || "").trim() || (paso.content || "").trim();
 
-  if (paso.trim()) {
+  if (tieneContenido) {
     const ok = confirm("¿Seguro que deseas eliminar este próximo paso?");
     if (!ok) return;
   }
@@ -1246,13 +1302,18 @@ function removeProximoPaso(index) {
   }
 
   renderProximosPasosUI();
+  verificarProximosPasos();
   scheduleAutoSave();
 }
 
+
 function verificarProximosPasos() {
   const pasosValidos = currentProximosPasos
-    .map(p => (p || "").trim())
-    .filter(Boolean);
+    .map(p => ({
+      time: (p.time || "").trim(),
+      content: (p.content || "").trim()
+    }))
+    .filter(p => p.time || p.content);
 
   const toggleBtn = document.getElementById("togglePasosBtn");
 
@@ -1265,6 +1326,7 @@ function verificarProximosPasos() {
 
   return pasosValidos.length;
 }
+
     function renderTimeline(entries) {
       currentTimelineEntries = (entries || []).map(e => ({ time: e?.time || "", content: e?.content || "" }));
       showAllTimelineEntries = false; renderTimelineUI(); refreshStepperState();
@@ -1322,9 +1384,12 @@ function verificarProximosPasos() {
       const sharedServicioChip = document.getElementById("sharedServicioChip");
       const sharedServicio = sharedServicioChip ? plain(sharedServicioChip.innerHTML) : "";
       if (sharedServicio) { data.apertura_servicio = sharedServicio; data.avance_servicio = sharedServicio; }
-      data.avance_proximosPasos = currentProximosPasos
-  .map(p => (p || "").trim())
-  .filter(Boolean);
+data.avance_proximosPasos = currentProximosPasos
+  .map(p => ({
+    time: (p.time || "").trim(),
+    content: (p.content || "").trim()
+  }))
+  .filter(p => p.time || p.content);
       data.cierre_compromisos = Array.from(document.querySelectorAll("#compromisosContainer .list-item-text")).map(n=>n.value.trim()).filter(Boolean);
       data.avance_timeline = currentTimelineEntries.map(e => ({ time: (e.time||"").trim(), content: (e.content||"").trim() })).filter(e => e.time || e.content);
       data.updatedAt = new Date().toISOString();
@@ -1436,6 +1501,221 @@ async function downloadIncidentImage(key) {
       document.body.classList.remove("editor-open");
     }
   }
+}
+
+function downloadIncidentText(key) {
+  if (!key) {
+    showSync("No hay incidente seleccionado", true);
+    return;
+  }
+
+  let item = getAll().find(i => i.key === key);
+
+  if (!item) {
+    showSync("No se encontró el incidente", true);
+    return;
+  }
+
+  // Si el incidente abierto es el mismo, toma lo que está actualmente en pantalla
+  if (currentKey === key) {
+    item = readCurrent();
+    saveOne(item);
+  }
+
+  const text = buildIncidentPlainText(item);
+
+  // Copiar al portapapeles
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => showSync("Texto copiado y descargado ✅"))
+      .catch(() => showSync("Texto descargado. No se pudo copiar", true));
+  }
+
+  // Descargar archivo TXT
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${plain(item.incidentId).replace(/[^a-z0-9-]+/gi, "-") || "incidente-mayor"}.txt`;
+
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  URL.revokeObjectURL(url);
+}
+
+function buildIncidentPlainText(data) {
+  const type = data.incidentType || "apertura";
+
+  if (type === "apertura") {
+    return buildAperturaText(data);
+  }
+
+  if (type === "avance") {
+    return buildAvanceText(data);
+  }
+
+  if (type === "cierre") {
+    return buildCierreText(data);
+  }
+
+  return buildAperturaText(data);
+}
+
+function buildAperturaText(data) {
+  const incidentId = plain(data.incidentId || "INC0000000000");
+  const servicio = plain(data.avance_servicio || data.apertura_servicio || "[Nombre del servicio]");
+  const fechaEvento = formatDateOnly(data.apertura_fechaEvento);
+  const impacto = plain(data.apertura_impactoPreliminar || "");
+  const horaInicio = formatTimeOnly(data.apertura_horaInicio);
+
+  return [
+    "🚨 Apertura",
+    "",
+    `No. Incidente: ${incidentId}`,
+    `Fecha del Evento: ${fechaEvento}`,
+    `Impacto Preliminar: ${impacto}`,
+    `Hora de inicio estimada: ${horaInicio}`,
+    `Servicio afectado: ${servicio}`
+  ].join("\n");
+}
+
+function buildAvanceText(data) {
+  const incidentId = plain(data.incidentId || "INC0000000000");
+  const servicio = plain(data.avance_servicio || data.apertura_servicio || "[Nombre del servicio]");
+  const causa = plain(data.avance_causaProbable || "");
+  const lider = plain(data.avance_lider || "");
+
+  const avances = Array.isArray(data.avance_timeline) ? data.avance_timeline : [];
+  const ultimoAvance = avances.length ? avances[avances.length - 1] : null;
+
+  let avanceTexto = "";
+
+  if (ultimoAvance) {
+    const fechaAvance = plain(ultimoAvance.time || "");
+    const contenidoAvance = plain(ultimoAvance.content || "");
+
+    avanceTexto = fechaAvance
+      ? `${fechaAvance} - ${contenidoAvance}`
+      : contenidoAvance;
+  }
+
+  const pasos = normalizePasos(data.avance_proximosPasos);
+
+  const pasosTexto = pasos.length
+    ? pasos.map((p, i) => {
+        const fecha = plain(p.time || "");
+        const contenido = plain(p.content || "");
+
+        if (fecha && contenido) return `${i + 1}. ${fecha} - ${contenido}`;
+        if (contenido) return `${i + 1}. ${contenido}`;
+        if (fecha) return `${i + 1}. ${fecha}`;
+
+        return "";
+      }).filter(Boolean).join("\n")
+    : "Sin próximos pasos registrados.";
+
+  return [
+    "🔄 Avance/Actualización",
+    "",
+    `No. Incidente: ${incidentId}`,
+    `Servicio afectado: ${servicio}`,
+    `Avance: ${avanceTexto}`,
+    `Causa Probable: ${causa}`,
+    "Próximos pasos:",
+    pasosTexto,
+    `Líder del Incidente: ${lider}`
+  ].join("\n");
+}
+
+function buildCierreText(data) {
+  const incidentId = plain(data.incidentId || "INC0000000000");
+
+  const horaInicio = formatDateTimeLocal(data.cierre_horaInicio);
+  const horaFinal = formatDateTimeLocal(data.cierre_horaFinal);
+
+  const area = plain(data.cierre_areaResponsable || "");
+  const causaRaiz = plain(data.cierre_causaRaiz || "");
+  const tipoSolucion = plain(data.cierre_tipoSolucion || "");
+  const solucionAplicada = plain(data.cierre_solucionAplicada || "");
+
+  const compromisos = Array.isArray(data.cierre_compromisos) ? data.cierre_compromisos : [];
+
+  const compromisosTexto = compromisos.length
+    ? compromisos.map((c, i) => `${i + 1}. ${plain(c)}`).join("\n")
+    : "Sin compromisos registrados.";
+
+  return [
+    "✅ Fase Cierre",
+    "",
+    `No. Incidente: ${incidentId}`,
+    `Hora Inicio Afectación: ${horaInicio}`,
+    `Hora Final Afectación: ${horaFinal}`,
+    `Área TI responsable: ${area}`,
+    `Causa Raíz: ${causaRaiz}`,
+    `Tipo de solución: ${tipoSolucion}`,
+    `Solución aplicada: ${solucionAplicada}`,
+    "Compromisos sobre Acta:",
+    compromisosTexto
+  ].join("\n");
+}
+
+function normalizePasos(pasos) {
+  if (!Array.isArray(pasos)) return [];
+
+  return pasos.map(p => {
+    if (typeof p === "string") {
+      return {
+        time: "",
+        content: p
+      };
+    }
+
+    return {
+      time: p?.time || "",
+      content: p?.content || ""
+    };
+  }).filter(p => (p.time || "").trim() || (p.content || "").trim());
+}
+
+function formatDateOnly(value) {
+  if (!value) return "";
+
+  // Si viene como yyyy-mm-dd
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [y, m, d] = value.split("-");
+    return `${d}/${m}/${y}`;
+  }
+
+  return value;
+}
+
+function formatTimeOnly(value) {
+  if (!value) return "";
+
+  // Si viene como HH:mm
+  if (/^\d{2}:\d{2}$/.test(value)) {
+    const [hh, mm] = value.split(":").map(Number);
+    const suffix = hh >= 12 ? "PM" : "AM";
+    const hour12 = hh % 12 || 12;
+    return `${hour12}:${String(mm).padStart(2, "0")} ${suffix}`;
+  }
+
+  return value;
+}
+
+function formatDateTimeLocal(value) {
+  if (!value) return "";
+
+  // Si viene como yyyy-mm-ddTHH:mm
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)) {
+    const [date, time] = value.split("T");
+    return `${formatDateOnly(date)} ${formatTimeOnly(time.slice(0, 5))}`;
+  }
+
+  return value;
 }
 
     function saveCurrentIncident({silent=false}={}) {
